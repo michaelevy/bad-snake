@@ -1,0 +1,218 @@
+:root{
+  --background: #0e141b;
+  --background-light: #243344;
+  --accent: #d44c50;
+  --accent-trans: #d44c5077;
+  --secondary: rgb(255, 255, 255);
+
+}
+
+body {
+  background-color: var(--background);
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  height: 100dvh;
+}
+
+main {
+  font-family: 'FiraCode','Courier New', Courier, monospace;
+  color: var(--secondary);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  height: min-content
+}
+
+h1, p{
+  font-family: 'FiraCode','Courier New', Courier, monospace;
+}
+
+h1{
+  color: var(--accent);
+  padding: 10px;
+}
+
+sub{
+  padding-bottom: 30px;
+
+}
+
+.settings{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  width: 50%;
+  border: none;
+  margin: 10px;
+}
+
+.box{
+  border-radius: 10px;
+  border: 1px solid var(--background-light);
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 25px;
+  padding-right: 25px;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  margin: 10px;
+}
+
+.common{
+  color: #00FF00;
+}
+
+.rare{
+  color: #45a5ff;
+}
+
+.epic{
+  color: #ff00ff;
+}
+
+#title-sliders {
+  color: var(--secondary);
+  filter: opacity(25%);
+  display: column;
+  flex-direction: row;
+  align-items: left;
+  text-align: center;
+  font-size: small;
+  width: min-content;
+  position: absolute;
+  bottom: 50px;
+  left: 50px;
+  transition: all 0.1s ease-out;
+  &:hover {
+      filter: opacity(100%);
+  }
+
+  .title-slider {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 10px;
+      padding-top: 4px;
+      &::after {
+          border: 2px solid var(--secondary);
+          border-bottom: 0px;
+          height: 80%;
+          width: 100%;
+          content: '';
+          position: absolute;
+          top: 0;
+          z-index: -1;
+      }
+  }
+
+  #scroll-text {
+      padding-top: 10lvh;
+      font-size: small;
+  }
+
+  .next-arrow {
+      display: inline;
+      animation: slide-in 1500ms;
+      animation-iteration-count: infinite;
+      animation-timing-function: cubic-bezier(0, 0.75, 1, 0.25);
+      opacity: 1;
+  }
+}
+
+
+
+#snake {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  width: 90%;
+  height: 90%;
+}
+
+.glass-button{
+  /*Button Text Style*/
+  text-decoration: none;
+  /*Button Color & Border*/
+  border: 2px solid var(--secondary);
+  color: var(--secondary);
+  background: var(--background);
+  outline: none;
+  /*Position, Display, Size*/
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 10px 14px ;
+  cursor: pointer;
+  height: 2.5rem;
+  transform-style: preserve-3d;
+  transition: 0.2s ease-in-out;
+  margin: 2%;
+  margin-bottom: 5%;
+  width: 20rem;
+  left: -3px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  font-family: 'FiraCode','Courier New', Courier, monospace;
+  height: 50px;
+
+  &::after {
+    /*Make a:after be as big as button*/
+    position: absolute;
+    width: 103%;
+    height: 110%;
+    /*Give a:after Border & Background color*/
+    border: 2px solid var(--accent);
+    background-color: var(--accent-trans);
+    /*Decide Location of a:after..this gives a           bottom right shadow*/
+    left: 10px;
+    top: 10px;
+
+    /*Place a:after behind button*/
+    transform: translateZ(-1px);
+    content: "";
+
+    transition: 0.2s ease-in-out;
+  }
+
+  &::before {
+    /*Make a:after be as big as button*/
+    position: absolute;
+    width: 103%;
+    height: 110%;
+    /*Give a:after Border & Background color*/
+    border: 2px solid var(--accent);
+    background-color: var(--accent-trans);
+    /*Decide Location of a:after..this gives a           bottom right shadow*/
+    left: 1px;
+    top: 1px;
+
+    /*Place a:after behind button*/
+    transform: translateZ(-1px);
+    content: "";
+
+    transition: 0.2s ease-in-out;
+  }
+
+  &:hover {
+    transform: translate(3px, 3px);
+    transition: 0.2s ease-in-out;
+  }
+
+  &:hover:after {
+    transform: translate3D(-6px, -6px, -6px);
+    transition: 0.2s ease-in-out;
+  }
+  &:hover:before {
+    transform: translate3D(-3px, -3px, -3px);
+    transition: 0.2s ease-in-out;
+  }
+}

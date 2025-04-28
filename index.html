@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module" src="/src/main.ts"></script>
+  <link rel="stylesheet" type="text/css" href="src/style.css" />
+
+  <title>Vite + TS</title>
+</head>
+
+<body>
+  <main>
+  <h1>Bad Snake</h1>
+  <sub><i>"Snake but if it was broken"</i></sub>
+  <div class="box">
+    <h2>Number of players</h2>
+    <fieldset class="settings">
+      <div class="checkbox">
+        <input type="radio" id="1" name="players" checked>
+        <label for="one">1</label>
+      </div>
+      <div class="checkbox">
+        <input type="radio" id="2" name="players">
+        <label for="two">2</label>
+      </div>
+      <div class="checkbox">
+        <input type="radio" id="3" name="players">
+        <label for="three">3</label>
+      </div>
+      <div class="checkbox">
+        <input type="radio" id="4" name="players">
+        <label for="four">4</label>
+      </div>
+      <div class="checkbox">
+        <input type="radio" id="5" name="players">
+        <label for="five">5</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="box">
+    <p><i>How to play:</i></p>
+    <p>When a round begins, a random combination of 'settings' will appear. These change how the game works, and each
+      can be toggled below. </p>
+    <p>During the round, both normal and special food will spawn. Both will make your snake longer, but special food
+      will cause a powerup, debuff, or event to occur.</p>
+  </div>
+  <div class="box">
+
+    <h2>Available Settings</h2>
+    <h3 class="common">Common</h3>
+    <div class="settings">
+      <div class="checkbox">
+        <input class="setting" type="checkbox" id="SHORT" name="short" checked>
+        <label for="short">Short</label><br>
+      </div>
+      <div class="checkbox">
+        <input class="setting" type="checkbox" id="LONG" name="long" checked>
+        <label for="long">Long</label><br>
+      </div>
+      <div class="checkbox">
+        <input class="setting" type="checkbox" id="DEAD_SCORE" name="dead-score" checked>
+        <label for="dead-score">Dead snake scores</label><br>
+      </div>
+    </div>
+    <h3 class="rare">Rare</h3>
+    <div class="settings">
+      <div class="checkbox">
+        <input class="setting" type="checkbox" id="FAST" name="fast" checked>
+        <label for="fast">Fast</label><br>
+      </div>
+      <div class="checkbox">
+        <input class="setting" type="checkbox" id="BIG" name="big" checked>
+        <label for="big">Big</label><br>
+      </div>
+      <div class="checkbox">
+        <input class="setting" type="checkbox" id="SMALL" name="small" checked>
+        <label for="small">Small</label><br>
+      </div>
+    </div>
+      <h3 class="epic">Epic</h3>
+    <div class="settings">
+
+      <div class="checkbox">
+        <input class="setting" type="checkbox" id="REALLY_LONG" name="really-long" checked>
+        <label for="really-long">REALLY LONG</label>
+      </div>
+    </div>
+    <h2>Available Special Food Results</h2>
+    <h3 class="common">Common</h3>
+    <div class = "settings">
+      <div class="checkbox">
+        <input class="event" type="checkbox" id="LENGTH" name="length" checked>
+        <label for="length">Length +10</label><br>
+      </div>
+    </div>
+    <h3 class="rare">Rare</h3>
+    <div class="settings">
+      <div class="checkbox">
+        <input class="event" type="checkbox" id="CURSE" name="cursed" checked>
+        <label for="cursed">Curse</label><br>
+      </div>
+      <div class="checkbox">
+        <input class="event" type="checkbox" id="SPEED" name="speed" checked>
+        <label for="speed">Speed (universal)</label><br>
+      </div>
+    </div>
+  </div>
+  <button id="begin" class="glass-button">BEGIN</button>
+
+  </div>
+  <script type="module">
+    import { init } from './src/main.ts';
+    document.querySelector('#begin').addEventListener('click', begin)
+    function begin() {
+      const players = document.querySelectorAll('input[name="players"]:checked');
+      const settings = document.querySelectorAll('input.setting:checked');
+      const events = document.querySelectorAll('input.event:checked');
+      const playersCount = parseInt(players[0].id);
+      const settingsArray = Array.from(settings).map(setting => setting.id);
+      const eventsArray = Array.from(events).map(event => event.id);
+
+      document.querySelector('body').innerHTML = '<canvas id="snake" width="400" height="400"></canvas>'
+
+      init(playersCount, settingsArray, eventsArray)
+    }
+  </script>
+  </main>
+</body>
+
+</html>
