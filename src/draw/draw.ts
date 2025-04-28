@@ -80,7 +80,7 @@ export function drawScore(snakes: Snake[], settings: Settings) {
     x += ctx.measureText("ROUND SCORES: ").width + 10;
     
 
-    snakes.forEach((snake: Snake, index: number) => {
+    snakes.forEach((snake: Snake) => {
         setColour(snake.colour, settings.colours, settings.squareColour);
         ctx.fillText(snake.length.toString(), x, y);
         x += ctx.measureText(snake.length.toString()).width + 10;
@@ -96,7 +96,7 @@ export function drawTotalScore(snakes: Snake[], settings: Settings) {
     x += ctx.measureText("TOTAL SCORES: ").width + 10;
     
 
-    snakes.forEach((snake: Snake, index: number) => {
+    snakes.forEach((snake: Snake) => {
         setColour(snake.colour, settings.colours, settings.squareColour);
         ctx.fillText(snake.totalScore.toString(), x, y);
         x += ctx.measureText(snake.totalScore.toString()).width + 10;
