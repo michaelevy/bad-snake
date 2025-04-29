@@ -90,6 +90,9 @@ export default class Snake {
                     case SnakeEventType.LENGTH:
                         this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.LENGTH, "LENGTH", 'p', frame))
                         this.length += 10
+                        break;
+                    case SnakeEventType.RING_OF_FIRE:
+                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.RING_OF_FIRE, "RING OF FIRE", 'r', frame))
                     break;
                 }
             }

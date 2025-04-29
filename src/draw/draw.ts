@@ -1,6 +1,7 @@
-import { getSettingRarity, Rarity, Settings, SettingsType } from "../components/Settings";
+import { getSettingRarity, Settings, SettingsType } from "../components/Settings";
 import { SnakeEvent } from "../components/SnakeEvent";
 import Snake from "../snake";
+import { Rarity } from "../utilities";
 
 let ctx: CanvasRenderingContext2D;
 let canvas: HTMLCanvasElement;

@@ -1,4 +1,4 @@
-import { Settings, SettingsType, getBeginSettings } from "./components/Settings"
+import { Settings, SettingsType, Status, StatusEvent, getBeginSettings } from "./components/Settings"
 import { SnakeEvent, SnakeEventType } from "./components/SnakeEvent";
 import Snake from "./snake";
 import { Direction } from "./utilities";
@@ -46,6 +46,10 @@ let settings: Settings = {
     columnNum: 0,
     rowNum: 0,
     deadScore: false,
+    status: {
+        frame: 0,
+        type: Status.NORMAL
+    },
 }
 
 let frame = 0;
@@ -59,6 +63,11 @@ export function addEvent(event: SnakeEvent) {
         settings.fps = settings.fps + 5
         fpsInterval = 1000 / settings.fps;
         console.log(settings.fps);
+    } else if (event.type == SnakeEventType.RING_OF_FIRE){
+        settings.status = {
+            frame: event.frame,
+            type: Status.RING_OF_FIRE
+        }
     }
     console.log(`Event added: ${event.colour} ${event.type} at frame ${event.frame}`);
 }
@@ -73,9 +82,9 @@ function handleResize() {
 export function init(playerNum: number, enabledSettings:string[], enabledEvents: string[]) {
     let snakeNum = playerNum;
     settings.enabledEvents = enabledEvents.map(event => SnakeEventType[event as keyof typeof SnakeEventType]);
+    console.log(settings.enabledEvents);
 
     settings.enabledSettings = enabledSettings.map(setting => SettingsType[setting as keyof typeof SettingsType]);
-    
 
     canvas = document.getElementById("snake") as HTMLCanvasElement;
     drawer.initCanvas(canvas)
@@ -137,6 +146,7 @@ export function init(playerNum: number, enabledSettings:string[], enabledEvents:
             }
 
             fpsInterval = executeTriggers(started, grid, fpsInterval);
+            handleStatus(grid, settings.status)
 
             drawer.drawGrid(grid, settings);
             if (!settings.deadScore) drawer.drawScore(snakes, settings);
@@ -244,6 +254,10 @@ function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: any
     grid = new Array(settings.columnNum).fill('0').map(() => new Array(settings.rowNum).fill('0'));
     frame = 0;
     events = [];
+    settings.status = {
+        frame: 0,
+        type: Status.NORMAL
+    }
     return { started, fpsInterval, grid };
 }
 
@@ -257,3 +271,23 @@ function createSnakes(snakeNum: number, snakes: Snake[]) {
         snakes.push(new Snake(x, y, direction, length, colour, i + 1, settings, addEvent));
     }
 }
+function handleStatus(grid: any[][], status: StatusEvent) {
+    switch (status.type) {
+        case Status.NORMAL:
+            break;
+        case Status.RING_OF_FIRE:
+            let ringSize = Math.floor((frame - status.frame) / 5);
+            for (let i = 0; i < settings.columnNum; i++) {
+                for (let j = 0; j < settings.rowNum; j++) {
+                    if (i < ringSize || i >= settings.columnNum - ringSize || j < ringSize || j >= settings.rowNum - ringSize) {
+                        grid[i][j] = 'r';
+                    }
+                }
+            }
+
+            break;
+        default:
+            console.warn("Unhandled status:", status);
+    }
+}
+

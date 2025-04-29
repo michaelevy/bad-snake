@@ -1,3 +1,5 @@
+import { Rarity } from "../utilities";
+
 export class SnakeEvent {
     x: number;
     y: number;
@@ -25,5 +27,25 @@ export enum SnakeEventType {
     SPEED = 'SPEED',
     CHAT = 'CHAT',
     SPECIAL = 'SPECIAL',
-    LENGTH = 'LENGTH'
+    LENGTH = 'LENGTH',
+    RING_OF_FIRE = 'RING OF FIRE',
 }
+
+let eventRarity = {
+    [SnakeEventType.CURSE]: Rarity.RARE,
+    [SnakeEventType.SPEED]: Rarity.RARE,
+    [SnakeEventType.LENGTH]: Rarity.COMMON,
+    [SnakeEventType.SNAKED]: Rarity.NEVER,
+    [SnakeEventType.WALL]: Rarity.NEVER,
+    [SnakeEventType.BACKWARDS_MOMENT]: Rarity.NEVER,
+    [SnakeEventType.EATEN]: Rarity.NEVER,
+    [SnakeEventType.FOOD]: Rarity.NEVER,
+    [SnakeEventType.SPECIAL]: Rarity.NEVER,
+    [SnakeEventType.CHAT]: Rarity.NEVER,
+    [SnakeEventType.RING_OF_FIRE]: Rarity.EPIC,
+}
+
+export function getEventRarity(event: SnakeEventType) {
+    return eventRarity[event];
+}
+

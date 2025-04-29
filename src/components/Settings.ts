@@ -1,4 +1,5 @@
-import { SnakeEventType } from "./SnakeEvent";
+import { Rarity } from "../utilities";
+import { getEventRarity, SnakeEventType } from "./SnakeEvent";
 
 export enum SettingsType {
     BIG = 'BIG',
@@ -10,26 +11,15 @@ export enum SettingsType {
     DEAD_SCORE = 'DEAD SCORE',
 }
 
-export enum Rarity {
-    NEVER = 'NEVER',
-    COMMON = 'COMMON',
-    RARE = 'RARE',
-    EPIC = 'EPIC'
+export interface StatusEvent {
+    frame: number;
+    type: Status;
 }
 
-let eventRarity = {
-    [SnakeEventType.CURSE]: Rarity.RARE,
-    [SnakeEventType.SPEED]: Rarity.RARE,
-    [SnakeEventType.LENGTH]: Rarity.COMMON,
-    [SnakeEventType.SNAKED]: Rarity.NEVER,
-    [SnakeEventType.WALL]: Rarity.NEVER,
-    [SnakeEventType.BACKWARDS_MOMENT]: Rarity.NEVER,
-    [SnakeEventType.EATEN]: Rarity.NEVER,
-    [SnakeEventType.FOOD]: Rarity.NEVER,
-    [SnakeEventType.SPECIAL]: Rarity.NEVER,
-    [SnakeEventType.CHAT]: Rarity.NEVER,
+export enum Status {
+    NORMAL = 'NORMAL',
+    RING_OF_FIRE = 'RING OF FIRE',
 }
-
 
 let settingRarity = {
     [SettingsType.BIG]: Rarity.RARE,
@@ -59,6 +49,7 @@ export interface Settings{
     currentSettings: SettingsType[];
     startingLength: number;
     deadScore: boolean;
+    status: StatusEvent;
 }
 
 export function getBeginSettings(enabledSettings: SettingsType[]){
@@ -93,7 +84,7 @@ export function getSettingRarity(setting: SettingsType) {
 
 export function getEventResult(enabledEvents: SnakeEventType[]): SnakeEventType{
     let rarity: Rarity = Math.random() < 0.4 ? Rarity.COMMON : Math.random() < (2/3) ? Rarity.RARE : Rarity.EPIC;
-    return chooseSingle(enabledEvents.filter(event => eventRarity[event] == rarity)) as SnakeEventType;
+    return chooseSingle(enabledEvents.filter(event => getEventRarity(event) == rarity)) as SnakeEventType;
 }
 
 
