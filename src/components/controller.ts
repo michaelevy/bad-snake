@@ -47,19 +47,19 @@ export function keyPress(event: KeyboardEvent,snakes: Snake[]){
 export function mousePress(event: MouseEvent, snakes: Snake[]){
     if (event.button==0 && snakes[3].direction == Direction.LEFT) {
         snakes[3].direction = Direction.DOWN;   
-    } else if(event.button==0&& snakes[3].direction == Direction.RIGHT) {
+    } else if(event.button==0 && snakes[3].direction == Direction.RIGHT) {
         snakes[3].direction = Direction.UP;   
-    } else if (event.button==0 && snakes[3].direction == Direction.UP) {
-        snakes[3].direction = Direction.UP;   
-    } else if(event.button==0&& snakes[3].direction == Direction.DOWN) {
-        snakes[3].direction = Direction.DOWN;   
+    } else if(event.button==0 && snakes[3].direction == Direction.UP) {
+        snakes[3].direction = Direction.LEFT;   
+    } else if(event.button==0 && snakes[3].direction == Direction.DOWN) {
+        snakes[3].direction = Direction.RIGHT;   
     } else if(event.button==2 && snakes[3].direction == Direction.LEFT) {
         snakes[3].direction = Direction.UP;   
-    } else if(event.button==2&& snakes[3].direction == Direction.RIGHT) {
+    } else if(event.button==2 && snakes[3].direction == Direction.RIGHT) {
         snakes[3].direction = Direction.DOWN;   
     } else if(event.button==2 && snakes[3].direction == Direction.UP) {
         snakes[3].direction = Direction.RIGHT;   
-    } else if(event.button==2&& snakes[3].direction == Direction.DOWN) {
+    } else if(event.button==2 && snakes[3].direction == Direction.DOWN) {
         snakes[3].direction = Direction.LEFT;   
     }
     event.preventDefault();
