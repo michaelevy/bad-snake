@@ -86,8 +86,16 @@ export function getSettingRarity(setting: SettingsType) {
 }
 
 export function getEventResult(enabledEvents: SnakeEventType[]): SnakeEventType{
-    let rarity: Rarity = Math.random() < 0.4 ? Rarity.COMMON : Math.random() < (2/3) ? Rarity.RARE : Rarity.EPIC;
-    return chooseSingle(enabledEvents.filter(event => getEventRarity(event) == rarity)) as SnakeEventType;
+    // Build a weighted list based on rarity
+    let weightedEvents: SnakeEventType[] = [];
+    enabledEvents.forEach(event => {
+        let rarity = getEventRarity(event);
+        let weight = rarity === Rarity.COMMON ? 4 : rarity === Rarity.RARE ? 2 : 1; // Common 4x, Rare 2x, Epic 1x
+        for (let i = 0; i < weight; i++) {
+            weightedEvents.push(event);
+        }
+    });
+    return chooseSingle(weightedEvents) as SnakeEventType;
 }
 
 

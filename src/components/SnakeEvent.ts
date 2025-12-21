@@ -30,11 +30,13 @@ export enum SnakeEventType {
     LENGTH = 'LENGTH',
     RING_OF_FIRE = 'RING OF FIRE',
     METEORS = 'METEORS',
+    FREAKY_FRIDAY = 'FREAKY FRIDAY',
 }
 
 let eventRarity = {
     [SnakeEventType.CURSE]: Rarity.RARE,
     [SnakeEventType.SPEED]: Rarity.RARE,
+    [SnakeEventType.FREAKY_FRIDAY]: Rarity.RARE,
     [SnakeEventType.LENGTH]: Rarity.COMMON,
     [SnakeEventType.SNAKED]: Rarity.NEVER,
     [SnakeEventType.WALL]: Rarity.NEVER,

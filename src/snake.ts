@@ -80,7 +80,9 @@ export default class Snake {
             } else if (grid[newX][newY] == 'p') {
                 // roll event with rarity taken into account
                 let event = getEventResult(this.settings.enabledEvents);
-                console.log(this.settings.enabledEvents)
+                console.log('Enabled events:', this.settings.enabledEvents);
+                console.log('getEventResult returned:', event);
+                console.log('SnakeEventType.FREAKY_FRIDAY:', SnakeEventType.FREAKY_FRIDAY);
                 switch (event) {
                     case SnakeEventType.CURSE:
                         this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.CURSE, "CURSED!", 'p', frame))
@@ -99,6 +101,10 @@ export default class Snake {
                     case SnakeEventType.METEORS:
                         this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.METEORS, "METEORS", 'r', frame))
                     break;
+                    case SnakeEventType.FREAKY_FRIDAY:
+                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.FREAKY_FRIDAY, "FREAKY FRIDAY", 'm', frame))
+                        grid[newX][newY] = '0'; // Clear the special food
+                        return; // Don't continue moving this frame - the swap handles positioning
                 }
             }
             else if (grid[newX][newY] != '0') {

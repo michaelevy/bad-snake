@@ -18,26 +18,26 @@
   <div class="box">
     <h2>Number of players</h2>
     <fieldset class="settings">
-      <div class="checkbox">
+      <label class="checkbox">
         <input type="radio" id="1" name="players" checked>
-        <label for="one">1</label>
-      </div>
-      <div class="checkbox">
+        <span>1</span>
+      </label>
+      <label class="checkbox">
         <input type="radio" id="2" name="players">
-        <label for="two">2</label>
-      </div>
-      <div class="checkbox">
+        <span>2</span>
+      </label>
+      <label class="checkbox">
         <input type="radio" id="3" name="players">
-        <label for="three">3</label>
-      </div>
-      <div class="checkbox">
+        <span>3</span>
+      </label>
+      <label class="checkbox">
         <input type="radio" id="4" name="players">
-        <label for="four">4</label>
-      </div>
-      <div class="checkbox">
+        <span>4</span>
+      </label>
+      <label class="checkbox">
         <input type="radio" id="5" name="players">
-        <label for="five">5</label>
-      </div>
+        <span>5</span>
+      </label>
     </fieldset>
   </div>
   <div class="box">
@@ -47,77 +47,83 @@
     <p>During the round, both normal and special food will spawn. Both will make your snake longer, but special food
       will cause a powerup, debuff, or event to occur.</p>
   </div>
-  <div class="box">
-
+  <div class="settings-container">
+  <div class="box settings-box">
     <h2>Available Settings</h2>
     <h3 class="common">Common</h3>
     <div class="settings">
-      <div class="checkbox">
+      <label class="checkbox">
         <input class="setting" type="checkbox" id="SHORT" name="short" checked>
-        <label for="short">Short</label><br>
-      </div>
-      <div class="checkbox">
+        <span>Short</span>
+      </label>
+      <label class="checkbox">
         <input class="setting" type="checkbox" id="LONG" name="long" checked>
-        <label for="long">Long</label><br>
-      </div>
-      <div class="checkbox">
+        <span>Long</span>
+      </label>
+      <label class="checkbox">
         <input class="setting" type="checkbox" id="DEAD_SCORE" name="dead-score" checked>
-        <label for="dead-score">Dead snake scores</label><br>
-      </div>
+        <span>Dead snake scores</span>
+      </label>
     </div>
     <h3 class="rare">Rare</h3>
     <div class="settings">
-      <div class="checkbox">
+      <label class="checkbox">
         <input class="setting" type="checkbox" id="FAST" name="fast" checked>
-        <label for="fast">Fast</label><br>
-      </div>
-      <div class="checkbox">
+        <span>Fast</span>
+      </label>
+      <label class="checkbox">
         <input class="setting" type="checkbox" id="BIG" name="big" checked>
-        <label for="big">Big</label><br>
-      </div>
-      <div class="checkbox">
+        <span>Big</span>
+      </label>
+      <label class="checkbox">
         <input class="setting" type="checkbox" id="SMALL" name="small" checked>
-        <label for="small">Small</label><br>
-      </div>
+        <span>Small</span>
+      </label>
     </div>
       <h3 class="epic">Epic</h3>
     <div class="settings">
-
-      <div class="checkbox">
+      <label class="checkbox">
         <input class="setting" type="checkbox" id="REALLY_LONG" name="really-long" checked>
-        <label for="really-long">REALLY LONG</label>
-      </div>
+        <span>REALLY LONG</span>
+      </label>
     </div>
+  </div>
+  <div class="box settings-box">
     <h2>Available Special Food Results</h2>
     <h3 class="common">Common</h3>
-    <div class = "settings">
-      <div class="checkbox">
+    <div class="settings">
+      <label class="checkbox">
         <input class="event" type="checkbox" id="LENGTH" name="length" checked>
-        <label for="length">Length +10</label><br>
-      </div>
+        <span>Length +10</span>
+      </label>
     </div>
     <h3 class="rare">Rare</h3>
     <div class="settings">
-      <div class="checkbox">
+      <label class="checkbox">
         <input class="event" type="checkbox" id="CURSE" name="cursed" checked>
-        <label for="cursed">Curse</label><br>
-      </div>
-      <div class="checkbox">
+        <span>Curse</span>
+      </label>
+      <label class="checkbox">
         <input class="event" type="checkbox" id="SPEED" name="speed" checked>
-        <label for="speed">Speed (universal)</label><br>
-      </div>
+        <span>Speed (universal)</span>
+      </label>
+      <label class="checkbox">
+        <input class="event" type="checkbox" id="FREAKY_FRIDAY" name="freaky-friday" checked>
+        <span>Freaky Friday</span>
+      </label>
     </div>
     <h3 class="epic">Epic</h3>
     <div class="settings">
-      <div class="checkbox">
+      <label class="checkbox">
         <input class="event" type="checkbox" id="RING_OF_FIRE" name="ring-of-fire" checked>
-        <label for="ring-of-fire">Ring of Fire</label><br>
-      </div>
-      <div class="checkbox">
+        <span>Ring of Fire</span>
+      </label>
+      <label class="checkbox">
         <input class="event" type="checkbox" id="METEORS" name="meteors" checked>
-        <label for="meteors">Meteors</label><br>
-      </div>
+        <span>Meteors</span>
+      </label>
     </div>
+  </div>
   </div>
   <button id="begin" class="glass-button">BEGIN</button>
 

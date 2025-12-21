@@ -59,8 +59,11 @@ let fpsInterval = 1000 / settings.fps;
 let canvas: HTMLCanvasElement;
 let events: SnakeEvent[] = []
 
+let allSnakes: Snake[] = [];
+
 export function addEvent(event: SnakeEvent) {
     events.push(event);
+    console.log(`addEvent called with type: ${event.type}, checking against FREAKY_FRIDAY: ${SnakeEventType.FREAKY_FRIDAY}`);
     if (event.type == SnakeEventType.SPEED) {
         settings.fps = settings.fps + 5
         fpsInterval = 1000 / settings.fps;
@@ -75,8 +78,47 @@ export function addEvent(event: SnakeEvent) {
             frame: event.frame,
             type: Status.METEORS
         }
+    } else if (event.type == SnakeEventType.FREAKY_FRIDAY){
+        console.log('Triggering FREAKY_FRIDAY swap');
+        swapSnakeBodies();
     }
     console.log(`Event added: ${event.colour} ${event.type} at frame ${event.frame}`);
+}
+
+function swapSnakeBodies() {
+    const aliveSnakes = allSnakes.filter(snake => !snake.dead);
+    console.log(`FREAKY FRIDAY! Swapping ${aliveSnakes.length} snakes`);
+    if (aliveSnakes.length < 2) {
+        console.log('Not enough snakes to swap');
+        return;
+    }
+
+    const snakeData = aliveSnakes.map(snake => ({
+        body: snake.body.map(pos => [...pos]),
+        length: snake.length,
+        x: snake.x,
+        y: snake.y,
+        direction: snake.direction,
+        prevDirection: snake.prevDirection,
+        curses: [...snake.curses]
+    }));
+
+    console.log('Before swap:', aliveSnakes.map(s => `(${s.x},${s.y})`));
+
+    for (let i = 0; i < aliveSnakes.length; i++) {
+        const nextIndex = (i + 1) % aliveSnakes.length;
+        const nextData = snakeData[nextIndex];
+
+        aliveSnakes[i].body = nextData.body;
+        aliveSnakes[i].length = nextData.length;
+        aliveSnakes[i].x = nextData.x;
+        aliveSnakes[i].y = nextData.y;
+        aliveSnakes[i].direction = nextData.direction;
+        aliveSnakes[i].prevDirection = nextData.prevDirection;
+        aliveSnakes[i].curses = nextData.curses;
+    }
+    
+    console.log('After swap:', aliveSnakes.map(s => `(${s.x},${s.y})`));
 }
 
 function handleResize() {
@@ -106,6 +148,7 @@ export function init(playerNum: number, enabledSettings:string[], enabledEvents:
 
     let snakes: Snake[] = []
     createSnakes(snakeNum, snakes);
+    allSnakes = snakes;
 
     addEventListener("keydown", (e) => {
         if (!started) {
