@@ -5,6 +5,7 @@ import { Direction } from "./utilities";
 import * as drawer from "./draw/draw";
 import * as segment from "./draw/Segment";
 import * as controller from "./components/controller";
+import { Meteor, MeteorPhase } from "./components/Meteor";
 
 let settings: Settings = {
     squareSize: 25,
@@ -50,6 +51,7 @@ let settings: Settings = {
         frame: 0,
         type: Status.NORMAL
     },
+    meteors: [],
 }
 
 let frame = 0;
@@ -67,6 +69,11 @@ export function addEvent(event: SnakeEvent) {
         settings.status = {
             frame: event.frame,
             type: Status.RING_OF_FIRE
+        }
+    } else if (event.type == SnakeEventType.METEORS){
+        settings.status = {
+            frame: event.frame,
+            type: Status.METEORS
         }
     }
     console.log(`Event added: ${event.colour} ${event.type} at frame ${event.frame}`);
@@ -219,6 +226,9 @@ function executeTriggers(started: boolean, grid: any[][], fpsInterval: number) {
         settings.fps += 1;
         fpsInterval = 1000 / settings.fps;
     }
+    if (started && settings.status.type === Status.METEORS && Math.random() < 0.05) {
+        spawnMeteor();
+    }
     return fpsInterval;
 }
 
@@ -241,6 +251,17 @@ function createFood(grid: any[][]) {
     grid[x][y] = food;
 }
 
+function spawnMeteor() {
+    const x = Math.floor(Math.random() * settings.columnNum);
+    const y = Math.floor(Math.random() * settings.rowNum);
+    const radius = Math.floor(Math.random() * 5) + 3; // Random radius between 3 and 7
+
+    const meteor = new Meteor(x, y, radius, frame);
+    settings.meteors.push(meteor);
+
+    addEvent(new SnakeEvent(x, y, SnakeEventType.CHAT, 'INCOMING!', 'y', frame));
+}
+
 function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: any[][]) {
     setSettings();
     started = false;
@@ -254,6 +275,7 @@ function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: any
     grid = new Array(settings.columnNum).fill('0').map(() => new Array(settings.rowNum).fill('0'));
     frame = 0;
     events = [];
+    settings.meteors = [];
     settings.status = {
         frame: 0,
         type: Status.NORMAL
@@ -284,7 +306,21 @@ function handleStatus(grid: any[][], status: StatusEvent) {
                     }
                 }
             }
+            break;
+        case Status.METEORS:
+            settings.meteors = settings.meteors.filter(meteor => !meteor.isFinished(frame));
 
+            settings.meteors.forEach(meteor => {
+                for (let i = 0; i < settings.columnNum; i++) {
+                    for (let j = 0; j < settings.rowNum; j++) {
+                        if (meteor.containsPoint(i, j)) {
+                            if (meteor.isInImpactPhase(frame)) {
+                                grid[i][j] = 'r';
+                            }
+                        }
+                    }
+                }
+            });
             break;
         default:
             console.warn("Unhandled status:", status);

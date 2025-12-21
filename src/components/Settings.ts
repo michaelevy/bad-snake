@@ -1,5 +1,6 @@
 import { Rarity } from "../utilities";
 import { getEventRarity, SnakeEventType } from "./SnakeEvent";
+import { Meteor } from "./Meteor";
 
 export enum SettingsType {
     BIG = 'BIG',
@@ -19,6 +20,7 @@ export interface StatusEvent {
 export enum Status {
     NORMAL = 'NORMAL',
     RING_OF_FIRE = 'RING OF FIRE',
+    METEORS = 'METEORS',
 }
 
 let settingRarity = {
@@ -50,6 +52,7 @@ export interface Settings{
     startingLength: number;
     deadScore: boolean;
     status: StatusEvent;
+    meteors: Meteor[];
 }
 
 export function getBeginSettings(enabledSettings: SettingsType[]){

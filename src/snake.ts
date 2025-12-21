@@ -96,6 +96,9 @@ export default class Snake {
                     case SnakeEventType.RING_OF_FIRE:
                         this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.RING_OF_FIRE, "RING OF FIRE", 'r', frame))
                     break;
+                    case SnakeEventType.METEORS:
+                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.METEORS, "METEORS", 'r', frame))
+                    break;
                 }
             }
             else if (grid[newX][newY] != '0') {
