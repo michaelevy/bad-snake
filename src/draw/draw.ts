@@ -77,9 +77,9 @@ export function drawScore(snakes: Snake[], settings: Settings) {
     ctx.fillStyle = settings.colours['w'];
     let y = 50 + gridOffset;
     let x = 10
-    ctx.fillText("ROUND SCORES: ", x, y);
+    ctx.fillText("LENGTHS: ", x, y);
     x += ctx.measureText("ROUND SCORES: ").width + 10;
-    
+
 
     snakes.forEach((snake: Snake) => {
         setColour(snake.colour, settings.colours, settings.squareColour);
@@ -95,7 +95,7 @@ export function drawTotalScore(snakes: Snake[], settings: Settings) {
     let x = 10
     ctx.fillText("TOTAL SCORES: ", x, y);
     x += ctx.measureText("TOTAL SCORES: ").width + 10;
-    
+
 
     snakes.forEach((snake: Snake) => {
         setColour(snake.colour, settings.colours, settings.squareColour);
@@ -111,4 +111,3 @@ export function setColour(colour: string, colours: Record<string, string>, squar
         ctx.fillStyle = colours[squareColour];
     }
 }
-

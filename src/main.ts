@@ -245,7 +245,7 @@ function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: any
     setSettings();
     started = false;
     snakes.filter(snake => !snake.dead).forEach(snake => {
-        snake.totalScore += snake.length;
+        snake.totalScore += 1;
     });
     snakes.forEach(snake => {
         snake.reset();
@@ -290,4 +290,3 @@ function handleStatus(grid: any[][], status: StatusEvent) {
             console.warn("Unhandled status:", status);
     }
 }
-

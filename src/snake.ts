@@ -17,6 +17,7 @@ export default class Snake {
     id: number;
     settings: Settings
     addEvent: Function;
+    hasMovedOnce: boolean;
     constructor(x: number, y: number, direction: Direction, length: number, colour: string, id: number, settings: Settings, addEvent: Function) {
         this.x = x;
         this.y = y;
@@ -31,11 +32,12 @@ export default class Snake {
         this.directionChanged = false;
         this.settings = settings;
         this.addEvent = addEvent;
+        this.hasMovedOnce = false;
     }
 
     update(grid: string[][], started: boolean, frame: number) {
         if (this.dead) return
-        if (started) this.move(grid, frame)
+        if (started && this.hasMovedOnce) this.move(grid, frame)
         if (this.dead) return
         this.drawSnake(grid, frame)
     }
@@ -160,10 +162,10 @@ export default class Snake {
         this.y = Math.floor(Math.random() * (this.settings.rowNum - this.settings.spawnMargin)) + this.settings.spawnMargin;
         this.direction = ['up', 'down', 'left', 'right'][Math.floor(Math.random() * 4)] as Direction;
         this.prevDirection = undefined;
-        this.totalScore += this.length;
         this.length = this.settings.startingLength
         this.body = [[this.x, this.y]];
         this.dead = false
         this.curses = [];
+        this.hasMovedOnce = false;
     }
 }

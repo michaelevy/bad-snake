@@ -1,67 +1,78 @@
 import { Direction } from "../utilities";
 import Snake from "../snake";
 
+function handleDirectionChange(snake: Snake, direction: Direction) {
+    if (!snake.hasMovedOnce) {
+        snake.hasMovedOnce = true;
+    } else {
+        snake.prevDirection = snake.direction;
+    }
+    snake.directionChanged = true;
+    snake.direction = direction;
+}
+
 export function keyPress(event: KeyboardEvent,snakes: Snake[]){
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key) && !snakes[0].directionChanged) {
-        snakes[0].prevDirection = snakes[0].direction;
-        snakes[0].directionChanged = true;
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key) && (!snakes[0].directionChanged || !snakes[0].hasMovedOnce)) {
         event.preventDefault();
         if (event.key == "ArrowUp") {
-            snakes[0].direction = Direction.UP;
+            handleDirectionChange(snakes[0], Direction.UP);
         } else if (event.key == "ArrowDown") {
-            snakes[0].direction = Direction.DOWN;
+            handleDirectionChange(snakes[0], Direction.DOWN);
         } else if (event.key == "ArrowLeft") {
-            snakes[0].direction = Direction.LEFT;
+            handleDirectionChange(snakes[0], Direction.LEFT);
         } else if (event.key == "ArrowRight") {
-            snakes[0].direction = Direction.RIGHT;
+            handleDirectionChange(snakes[0], Direction.RIGHT);
         }
-    } else if (['w', 'a', 's', 'd'].includes(event.key) && !snakes[1].directionChanged) {
-        snakes[1].prevDirection = snakes[1].direction;
-        snakes[1].directionChanged = true;
+    } else if (['w', 'a', 's', 'd'].includes(event.key) && (!snakes[1].directionChanged || !snakes[1].hasMovedOnce)) {
         event.preventDefault();
         if (event.key == "w") {
-            snakes[1].direction = Direction.UP;
+            handleDirectionChange(snakes[1], Direction.UP);
         } else if (event.key == "s") {
-            snakes[1].direction = Direction.DOWN;
+            handleDirectionChange(snakes[1], Direction.DOWN);
         } else if (event.key == "a") {
-            snakes[1].direction = Direction.LEFT;
+            handleDirectionChange(snakes[1], Direction.LEFT);
         } else if (event.key == "d") {
-            snakes[1].direction = Direction.RIGHT;
+            handleDirectionChange(snakes[1], Direction.RIGHT);
         }
-    } else if (['i', 'j', 'k', 'l'].includes(event.key) && !snakes[2].directionChanged) {
-        snakes[2].prevDirection = snakes[2].direction;
-        snakes[2].directionChanged = true;
+    } else if (['i', 'j', 'k', 'l'].includes(event.key) && (!snakes[2].directionChanged || !snakes[2].hasMovedOnce)) {
         event.preventDefault();
         if (event.key == "i") {
-            snakes[2].direction = Direction.UP;
+            handleDirectionChange(snakes[2], Direction.UP);
         } else if (event.key == "k") {
-            snakes[2].direction = Direction.DOWN;
+            handleDirectionChange(snakes[2], Direction.DOWN);
         } else if (event.key == "j") {
-            snakes[2].direction = Direction.LEFT;
+            handleDirectionChange(snakes[2], Direction.LEFT);
         } else if (event.key == "l") {
-            snakes[2].direction = Direction.RIGHT;
+            handleDirectionChange(snakes[2], Direction.RIGHT);
         }
     } 
 }
 
 export function mousePress(event: MouseEvent, snakes: Snake[]){
+    let newDirection: Direction;
+    
     if (event.button==0 && snakes[3].direction == Direction.LEFT) {
-        snakes[3].direction = Direction.DOWN;   
+        newDirection = Direction.DOWN;   
     } else if(event.button==0 && snakes[3].direction == Direction.RIGHT) {
-        snakes[3].direction = Direction.UP;   
+        newDirection = Direction.UP;   
     } else if(event.button==0 && snakes[3].direction == Direction.UP) {
-        snakes[3].direction = Direction.LEFT;   
+        newDirection = Direction.LEFT;   
     } else if(event.button==0 && snakes[3].direction == Direction.DOWN) {
-        snakes[3].direction = Direction.RIGHT;   
+        newDirection = Direction.RIGHT;   
     } else if(event.button==2 && snakes[3].direction == Direction.LEFT) {
-        snakes[3].direction = Direction.UP;   
+        newDirection = Direction.UP;   
     } else if(event.button==2 && snakes[3].direction == Direction.RIGHT) {
-        snakes[3].direction = Direction.DOWN;   
+        newDirection = Direction.DOWN;   
     } else if(event.button==2 && snakes[3].direction == Direction.UP) {
-        snakes[3].direction = Direction.RIGHT;   
+        newDirection = Direction.RIGHT;   
     } else if(event.button==2 && snakes[3].direction == Direction.DOWN) {
-        snakes[3].direction = Direction.LEFT;   
+        newDirection = Direction.LEFT;   
     }
+    
+    if (newDirection!) {
+        handleDirectionChange(snakes[3], newDirection);
+    }
+    
     event.preventDefault();
     event.stopPropagation();
 }
