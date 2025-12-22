@@ -62,6 +62,7 @@ let events: SnakeEvent[] = []
 
 let allSnakes: Snake[] = [];
 let roundWinner: Snake | null = null;
+let longestSnakeInRound: Snake | null = null;
 let showWinnerUntil: number = 0;
 
 export function addEvent(event: SnakeEvent) {
@@ -209,7 +210,7 @@ export function init(playerNum: number, enabledSettings:string[], enabledEvents:
 
             // Draw winner if we're in the winner display period
             if (roundWinner && frame < showWinnerUntil) {
-                drawer.drawWinner(roundWinner.colour, settings);
+                drawer.drawWinner(roundWinner.colour, longestSnakeInRound, settings);
             }
 
             frame++;
@@ -326,12 +327,24 @@ function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: any
     } else {
         roundWinner = null;
     }
-
+    
+    // Track longest snake before resetting
+    let longestSnake = snakes[0];
+    snakes.forEach(snake => {
+        if (snake.length > longestSnake.length) {
+            longestSnake = snake;
+        }
+    });
+    longestSnakeInRound = longestSnake;
+    
     setSettings();
     started = false;
+
     snakes.filter(snake => !snake.dead).forEach(snake => {
         snake.totalScore += 1;
     });
+    longestSnake.totalScore += 1;
+    
     snakes.forEach(snake => {
         snake.reset();
     });

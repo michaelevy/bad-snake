@@ -119,7 +119,7 @@ export function setColour(colour: string, colours: Record<string, string>, squar
     }
 }
 
-export function drawWinner(winnerColour: string, settings: Settings) {
+export function drawWinner(winnerColour: string, longestSnake: Snake | null, settings: Settings) {
     ctx.font = "bold 120px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -134,6 +134,20 @@ export function drawWinner(winnerColour: string, settings: Settings) {
 
     setColour(winnerColour, settings.colours, settings.squareColour);
     ctx.fillText(text, x, y);
+
+    // Draw longest snake below the winner text
+    if (longestSnake) {
+        ctx.font = "60px monospace";
+        const longestText = `LONGEST: ${longestSnake.colour.toUpperCase()} (${longestSnake.length})`;
+        const longestY = y + 100;
+
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.strokeText(longestText, x, longestY);
+
+        setColour(longestSnake.colour, settings.colours, settings.squareColour);
+        ctx.fillText(longestText, x, longestY);
+    }
 
     // Reset text alignment
     ctx.textAlign = "left";
