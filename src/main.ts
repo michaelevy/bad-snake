@@ -5,7 +5,7 @@ import { Direction } from "./utilities";
 import * as drawer from "./draw/draw";
 import * as segment from "./draw/Segment";
 import * as controller from "./components/controller";
-import { Meteor, MeteorPhase } from "./components/Meteor";
+import { Meteor } from "./components/Meteor";
 
 let settings: Settings = {
     squareSize: 25,
@@ -118,7 +118,7 @@ function swapSnakeBodies() {
         aliveSnakes[i].prevDirection = nextData.prevDirection;
         aliveSnakes[i].curses = nextData.curses;
     }
-    
+
     console.log('After swap:', aliveSnakes.map(s => `(${s.x},${s.y})`));
 }
 
