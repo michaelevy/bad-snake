@@ -1,15 +1,9 @@
-export enum MeteorPhase {
-    WARNING = 'WARNING',
-    IMPACT = 'IMPACT',
-    FINISHED = 'FINISHED'
-}
-
 export class Meteor {
     x: number;
     y: number;
     radius: number;
     spawnFrame: number;
-    warningDuration: number = 10
+    warningDuration: number = 10;
     impactDuration: number = 5;
 
     constructor(x: number, y: number, radius: number, spawnFrame: number) {
@@ -19,25 +13,14 @@ export class Meteor {
         this.spawnFrame = spawnFrame;
     }
 
-    getPhase(currentFrame: number): MeteorPhase {
-        const elapsed = currentFrame - this.spawnFrame;
-
-        if (elapsed < this.warningDuration) {
-            return MeteorPhase.WARNING;
-        } else if (elapsed < this.warningDuration + this.impactDuration) {
-            return MeteorPhase.IMPACT;
-        } else {
-            return MeteorPhase.FINISHED;
-        }
-    }
-
     isFinished(currentFrame: number): boolean {
-        return this.getPhase(currentFrame) === MeteorPhase.FINISHED;
+        const elapsed = currentFrame - this.spawnFrame;
+        return elapsed >= this.warningDuration + this.impactDuration;
     }
-
 
     isInImpactPhase(currentFrame: number): boolean {
-        return this.getPhase(currentFrame) === MeteorPhase.IMPACT;
+        const elapsed = currentFrame - this.spawnFrame;
+        return elapsed >= this.warningDuration && elapsed < this.warningDuration + this.impactDuration;
     }
 
     containsPoint(x: number, y: number): boolean {

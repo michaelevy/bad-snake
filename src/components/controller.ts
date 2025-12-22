@@ -1,7 +1,19 @@
 import { Direction } from "../utilities";
 import Snake from "../snake";
 
+function invertDirection(direction: Direction): Direction {
+    switch(direction) {
+        case Direction.UP: return Direction.DOWN;
+        case Direction.DOWN: return Direction.UP;
+        case Direction.LEFT: return Direction.RIGHT;
+        case Direction.RIGHT: return Direction.LEFT;
+    }
+}
+
 function handleDirectionChange(snake: Snake, direction: Direction) {
+    if (snake.settings.invertedControls) {
+        direction = invertDirection(direction);
+    }
     if (!snake.hasMovedOnce) {
         snake.hasMovedOnce = true;
     } else {

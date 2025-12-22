@@ -10,6 +10,7 @@ export enum SettingsType {
     LONG = 'LONG',
     REALLY_LONG = 'REALLY LONG',
     DEAD_SCORE = 'DEAD SCORE',
+    INVERTED_CONTROLS = 'INVERTED CONTROLS',
 }
 
 export interface StatusEvent {
@@ -30,7 +31,8 @@ let settingRarity = {
     [SettingsType.DEAD_SCORE]: Rarity.COMMON,
     [SettingsType.SHORT]: Rarity.COMMON,
     [SettingsType.LONG]: Rarity.COMMON,
-    [SettingsType.REALLY_LONG]: Rarity.EPIC
+    [SettingsType.REALLY_LONG]: Rarity.EPIC,
+    [SettingsType.INVERTED_CONTROLS]: Rarity.EPIC
 }
 
 export interface Settings{
@@ -51,21 +53,22 @@ export interface Settings{
     currentSettings: SettingsType[];
     startingLength: number;
     deadScore: boolean;
+    invertedControls: boolean;
     status: StatusEvent;
     meteors: Meteor[];
 }
 
 export function getBeginSettings(enabledSettings: SettingsType[]){
-    let commonNum = Math.random() < 0.6 ? Math.floor(Math.random() * 4) : 0
-    let rareNum = Math.random() < 0.3 ? Math.floor(Math.random() * 3) : 0
-    let epicNum = Math.random() < 0.05 ? 1 : 0
+    const weightedSettings = createWeightedList(enabledSettings, getSettingRarity);
+    
+    // Pick 0-4 random settings
+    const numSettings = Math.floor(Math.random() * 5);
+    let randomSettings = choose(weightedSettings, numSettings);
+    
+    // Remove duplicates
+    randomSettings = [...new Set(randomSettings)];
 
-    let commonSettings = choose(enabledSettings.filter(setting => settingRarity[setting] == Rarity.COMMON), commonNum);
-    let rareSettings = choose(enabledSettings.filter(setting => settingRarity[setting] == Rarity.RARE), rareNum);
-    let epicSettings = choose(enabledSettings.filter(setting => settingRarity[setting] == Rarity.EPIC), epicNum);
-
-    let randomSettings = [...commonSettings, ...rareSettings, ...epicSettings];
-
+    // Handle conflicts
     if (randomSettings.includes(SettingsType.BIG) && randomSettings.includes(SettingsType.SMALL)) {
         randomSettings = randomSettings.filter(setting => setting != SettingsType.SMALL);
     }
@@ -86,15 +89,7 @@ export function getSettingRarity(setting: SettingsType) {
 }
 
 export function getEventResult(enabledEvents: SnakeEventType[]): SnakeEventType{
-    // Build a weighted list based on rarity
-    let weightedEvents: SnakeEventType[] = [];
-    enabledEvents.forEach(event => {
-        let rarity = getEventRarity(event);
-        let weight = rarity === Rarity.COMMON ? 4 : rarity === Rarity.RARE ? 2 : 1; // Common 4x, Rare 2x, Epic 1x
-        for (let i = 0; i < weight; i++) {
-            weightedEvents.push(event);
-        }
-    });
+    const weightedEvents = createWeightedList(enabledEvents, getEventRarity);
     return chooseSingle(weightedEvents) as SnakeEventType;
 }
 
@@ -115,4 +110,16 @@ function choose(elements: any[], n: number){
 
 function chooseSingle(elements: any[]){
     return choose(elements, 1)[0];
+}
+
+function createWeightedList<T>(items: T[], getRarityFn: (item: T) => Rarity): T[] {
+    const weightedList: T[] = [];
+    items.forEach(item => {
+        const rarity = getRarityFn(item);
+        const weight = rarity === Rarity.COMMON ? 4 : rarity === Rarity.RARE ? 2 : 1;
+        for (let i = 0; i < weight; i++) {
+            weightedList.push(item);
+        }
+    });
+    return weightedList;
 }

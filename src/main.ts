@@ -47,6 +47,7 @@ let settings: Settings = {
     columnNum: 0,
     rowNum: 0,
     deadScore: false,
+    invertedControls: false,
     status: {
         frame: 0,
         type: Status.NORMAL
@@ -224,6 +225,7 @@ function setSettings() {
     settings.squareColour = '0';
     settings.startingLength = 3;
     settings.deadScore = false;
+    settings.invertedControls = false;
 
     beginSettings.forEach((setting: SettingsType) => {
         switch (setting) {
@@ -253,6 +255,9 @@ function setSettings() {
                 break;
             case SettingsType.DEAD_SCORE:
                 settings.deadScore = true;
+                break;
+            case SettingsType.INVERTED_CONTROLS:
+                settings.invertedControls = true;
                 break;
         }
     });
