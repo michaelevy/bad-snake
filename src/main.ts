@@ -63,6 +63,7 @@ let events: SnakeEvent[] = []
 let allSnakes: Snake[] = [];
 let roundWinner: Snake | null = null;
 let longestSnakeInRound: Snake | null = null;
+let longestSnakeLength: number = 0;
 let showWinnerUntil: number = 0;
 
 export function addEvent(event: SnakeEvent) {
@@ -210,7 +211,7 @@ export function init(playerNum: number, enabledSettings:string[], enabledEvents:
 
             // Draw winner if we're in the winner display period
             if (roundWinner && frame < showWinnerUntil) {
-                drawer.drawWinner(roundWinner.colour, longestSnakeInRound, settings);
+                drawer.drawWinner(roundWinner.colour, longestSnakeInRound, longestSnakeLength, settings);
             }
 
             frame++;
@@ -234,6 +235,7 @@ function setSettings() {
     settings.startingLength = 3;
     settings.deadScore = false;
     settings.invertedControls = false;
+    settings.colours['0'] = '#243344'; // Reset to default dark color
 
     beginSettings.forEach((setting: SettingsType) => {
         switch (setting) {
@@ -266,6 +268,7 @@ function setSettings() {
                 break;
             case SettingsType.INVERTED_CONTROLS:
                 settings.invertedControls = true;
+                settings.colours['0'] = '#ABAC9B';
                 break;
         }
     });
@@ -327,24 +330,25 @@ function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: any
     } else {
         roundWinner = null;
     }
-    
+
     // Track longest snake before resetting
-    let longestSnake = snakes[0];
-    snakes.forEach(snake => {
-        if (snake.length > longestSnake.length) {
-            longestSnake = snake;
-        }
-    });
-    longestSnakeInRound = longestSnake;
-    
+    let longestLength = Math.max(...snakes.map(s => s.length));
+    let longestSnakes = snakes.filter(s => s.length === longestLength);
+    longestSnakeInRound = longestSnakes[0]; // Display the first one in the tie
+    longestSnakeLength = longestLength; // Store the length before reset
+
     setSettings();
     started = false;
 
     snakes.filter(snake => !snake.dead).forEach(snake => {
         snake.totalScore += 1;
     });
-    longestSnake.totalScore += 1;
     
+    // Give points to all snakes that tied for longest
+    longestSnakes.forEach(snake => {
+        snake.totalScore += 1;
+    });
+
     snakes.forEach(snake => {
         snake.reset();
     });
