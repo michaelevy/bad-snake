@@ -27,12 +27,19 @@ export function drawGrid(grid: string[][], settings: Settings) {
 }
 
 export function drawEvents(events: SnakeEvent[], settings: Settings, frame: number) {
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    
     for (let e of events) {
         if (frame - e.frame > 5) continue;
         ctx.fillStyle = settings.colours[e.colour];
         ctx.font = "48px monospace";
-        ctx.fillText(e.text, e.x * settings.squareSize , e.y * settings.squareSize);
+        ctx.fillText(e.text, e.x * settings.squareSize, e.y * settings.squareSize + gridOffset);
     }
+    
+    // Reset text alignment
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
 }
 
 export function drawSettings(settingTypes: SettingsType[], settings: Settings){
@@ -110,4 +117,25 @@ export function setColour(colour: string, colours: Record<string, string>, squar
     } else {
         ctx.fillStyle = colours[squareColour];
     }
+}
+
+export function drawWinner(winnerColour: string, settings: Settings) {
+    ctx.font = "bold 120px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const text = `${winnerColour.toUpperCase()} WINS`;
+    const x = canvas.width / 2;
+    const y = canvas.height / 2;
+
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.strokeText(text, x, y);
+
+    setColour(winnerColour, settings.colours, settings.squareColour);
+    ctx.fillText(text, x, y);
+
+    // Reset text alignment
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
 }

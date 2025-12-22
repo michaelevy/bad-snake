@@ -61,6 +61,8 @@ let canvas: HTMLCanvasElement;
 let events: SnakeEvent[] = []
 
 let allSnakes: Snake[] = [];
+let roundWinner: Snake | null = null;
+let showWinnerUntil: number = 0;
 
 export function addEvent(event: SnakeEvent) {
     events.push(event);
@@ -205,6 +207,11 @@ export function init(playerNum: number, enabledSettings:string[], enabledEvents:
             drawer.drawEvents(events, settings, frame);
             drawer.drawSettings(settings.currentSettings,settings);
 
+            // Draw winner if we're in the winner display period
+            if (roundWinner && frame < showWinnerUntil) {
+                drawer.drawWinner(roundWinner.colour, settings);
+            }
+
             frame++;
         }
     }
@@ -311,6 +318,15 @@ function spawnMeteor() {
 }
 
 function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: any[][]) {
+    // Track winner before resetting
+    const aliveSnakes = snakes.filter(snake => !snake.dead);
+    if (aliveSnakes.length === 1) {
+        roundWinner = aliveSnakes[0];
+        showWinnerUntil = 20;
+    } else {
+        roundWinner = null;
+    }
+
     setSettings();
     started = false;
     snakes.filter(snake => !snake.dead).forEach(snake => {
