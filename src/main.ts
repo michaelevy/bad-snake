@@ -300,7 +300,7 @@ function createFood(grid: any[][]) {
         y = Math.floor(Math.random() * settings.rowNum);
     }
 
-    if (frame % (settings.foodInterval * 5) == 0) {
+    if (frame % (settings.foodInterval * 5) == (settings.foodInterval * 4)) {
         food = 'p';
         addEvent(new SnakeEvent(x, y, SnakeEventType.SPECIAL, 'SPECIAL FOOD', 'p', frame));
     } else {
@@ -343,7 +343,7 @@ function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: any
     snakes.filter(snake => !snake.dead).forEach(snake => {
         snake.totalScore += 1;
     });
-    
+
     // Give points to all snakes that tied for longest
     longestSnakes.forEach(snake => {
         snake.totalScore += 1;
