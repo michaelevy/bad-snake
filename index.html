@@ -16,29 +16,29 @@
   <h1>Bad Snake</h1>
   <sub><i>"Snake but if it was broken"</i></sub>
   <div class="box">
-    <h2>Number of players</h2>
-    <fieldset class="settings">
+    <h2>Select Control Schemes</h2>
+    <div class="settings">
       <label class="checkbox">
-        <input type="radio" id="1" name="players" checked>
-        <span>1</span>
+        <input class="control" type="checkbox" id="arrows" name="arrows" checked>
+        <span>Arrow Keys</span>
       </label>
       <label class="checkbox">
-        <input type="radio" id="2" name="players">
-        <span>2</span>
+        <input class="control" type="checkbox" id="wasd" name="wasd">
+        <span>WASD</span>
       </label>
       <label class="checkbox">
-        <input type="radio" id="3" name="players">
-        <span>3</span>
+        <input class="control" type="checkbox" id="ijkl" name="ijkl">
+        <span>IJKL</span>
       </label>
       <label class="checkbox">
-        <input type="radio" id="4" name="players">
-        <span>4</span>
+        <input class="control" type="checkbox" id="numpad" name="numpad">
+        <span>Numpad (8456)</span>
       </label>
       <label class="checkbox">
-        <input type="radio" id="5" name="players">
-        <span>5</span>
+        <input class="control" type="checkbox" id="mouse" name="mouse">
+        <span>Mouse (Left/Right Click)</span>
       </label>
-    </fieldset>
+    </div>
   </div>
   <div class="box">
     <p><i>How to play:</i></p>
@@ -136,16 +136,16 @@
     import { init } from './src/main.ts';
     document.querySelector('#begin').addEventListener('click', begin)
     function begin() {
-      const players = document.querySelectorAll('input[name="players"]:checked');
+      const controls = document.querySelectorAll('input.control:checked');
       const settings = document.querySelectorAll('input.setting:checked');
       const events = document.querySelectorAll('input.event:checked');
-      const playersCount = parseInt(players[0].id);
+      const controlsArray = Array.from(controls).map(control => control.id);
       const settingsArray = Array.from(settings).map(setting => setting.id);
       const eventsArray = Array.from(events).map(event => event.id);
 
       document.querySelector('body').innerHTML = '<canvas id="snake" width="400" height="400"></canvas>'
 
-      init(playersCount, settingsArray, eventsArray)
+      init(controlsArray, settingsArray, eventsArray)
     }
   </script>
   </main>

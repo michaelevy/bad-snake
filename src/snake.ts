@@ -18,7 +18,8 @@ export default class Snake {
     settings: Settings
     addEvent: Function;
     hasMovedOnce: boolean;
-    constructor(x: number, y: number, direction: Direction, length: number, colour: string, id: number, settings: Settings, addEvent: Function) {
+    controlScheme: string;
+    constructor(x: number, y: number, direction: Direction, length: number, colour: string, id: number, settings: Settings, addEvent: Function, controlScheme: string) {
         this.x = x;
         this.y = y;
         this.direction = direction;
@@ -33,6 +34,7 @@ export default class Snake {
         this.settings = settings;
         this.addEvent = addEvent;
         this.hasMovedOnce = false;
+        this.controlScheme = controlScheme;
     }
 
     update(grid: string[][], started: boolean, frame: number) {

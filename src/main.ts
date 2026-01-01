@@ -133,8 +133,8 @@ function handleResize() {
     canvas.height = rect.height * devicePixelRatio;
 }
 
-export function init(playerNum: number, enabledSettings:string[], enabledEvents: string[]) {
-    let snakeNum = playerNum;
+export function init(controlSchemes: string[], enabledSettings:string[], enabledEvents: string[]) {
+    let snakeNum = controlSchemes.length;
     settings.enabledEvents = enabledEvents.map(event => SnakeEventType[event as keyof typeof SnakeEventType]);
     console.log(settings.enabledEvents);
 
@@ -152,7 +152,7 @@ export function init(playerNum: number, enabledSettings:string[], enabledEvents:
     document.addEventListener('contextmenu', event => event.preventDefault());
 
     let snakes: Snake[] = []
-    createSnakes(snakeNum, snakes);
+    createSnakes(controlSchemes, snakes);
     allSnakes = snakes;
 
     addEventListener("keydown", (e) => {
@@ -300,7 +300,7 @@ function createFood(grid: any[][]) {
         y = Math.floor(Math.random() * settings.rowNum);
     }
 
-    if (frame % (settings.foodInterval * 5) == (settings.foodInterval * 4)) {
+    if (frame % (settings.foodInterval * 4) == (settings.foodInterval * 3)) {
         food = 'p';
         addEvent(new SnakeEvent(x, y, SnakeEventType.SPECIAL, 'SPECIAL FOOD', 'p', frame));
     } else {
@@ -364,14 +364,15 @@ function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: any
     return { started, fpsInterval, grid };
 }
 
-function createSnakes(snakeNum: number, snakes: Snake[]) {
-    for (let i = 0; i < snakeNum; i++) {
+function createSnakes(controlSchemes: string[], snakes: Snake[]) {
+    const colours = ['r', 'g', 'b', 'y', 'm', 'c'];
+    for (let i = 0; i < controlSchemes.length; i++) {
         let x = Math.floor(Math.random() * (settings.columnNum - settings.spawnMargin * 2)) + settings.spawnMargin;
         let y = Math.floor(Math.random() * (settings.rowNum - settings.spawnMargin * 2)) + settings.spawnMargin;
         let direction = ['up', 'down', 'left', 'right'][Math.floor(Math.random() * 4)] as Direction;
         let length = settings.startingLength;
-        let colour = ['r', 'g', 'b', 'y', 'm', 'c'][i];
-        snakes.push(new Snake(x, y, direction, length, colour, i + 1, settings, addEvent));
+        let colour = colours[i % colours.length];
+        snakes.push(new Snake(x, y, direction, length, colour, i + 1, settings, addEvent, controlSchemes[i]));
     }
 }
 function handleStatus(grid: any[][], status: StatusEvent) {

@@ -24,65 +24,94 @@ function handleDirectionChange(snake: Snake, direction: Direction) {
 }
 
 export function keyPress(event: KeyboardEvent,snakes: Snake[]){
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key) && (!snakes[0].directionChanged || !snakes[0].hasMovedOnce)) {
+    // Find snake with arrows control scheme
+    const arrowSnake = snakes.find(s => s.controlScheme === 'arrows');
+    if (arrowSnake && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key) && (!arrowSnake.directionChanged || !arrowSnake.hasMovedOnce)) {
         event.preventDefault();
         if (event.key == "ArrowUp") {
-            handleDirectionChange(snakes[0], Direction.UP);
+            handleDirectionChange(arrowSnake, Direction.UP);
         } else if (event.key == "ArrowDown") {
-            handleDirectionChange(snakes[0], Direction.DOWN);
+            handleDirectionChange(arrowSnake, Direction.DOWN);
         } else if (event.key == "ArrowLeft") {
-            handleDirectionChange(snakes[0], Direction.LEFT);
+            handleDirectionChange(arrowSnake, Direction.LEFT);
         } else if (event.key == "ArrowRight") {
-            handleDirectionChange(snakes[0], Direction.RIGHT);
+            handleDirectionChange(arrowSnake, Direction.RIGHT);
         }
-    } else if (['w', 'a', 's', 'd'].includes(event.key) && (!snakes[1].directionChanged || !snakes[1].hasMovedOnce)) {
+    }
+    
+    // Find snake with wasd control scheme
+    const wasdSnake = snakes.find(s => s.controlScheme === 'wasd');
+    if (wasdSnake && ['w', 'a', 's', 'd'].includes(event.key) && (!wasdSnake.directionChanged || !wasdSnake.hasMovedOnce)) {
         event.preventDefault();
         if (event.key == "w") {
-            handleDirectionChange(snakes[1], Direction.UP);
+            handleDirectionChange(wasdSnake, Direction.UP);
         } else if (event.key == "s") {
-            handleDirectionChange(snakes[1], Direction.DOWN);
+            handleDirectionChange(wasdSnake, Direction.DOWN);
         } else if (event.key == "a") {
-            handleDirectionChange(snakes[1], Direction.LEFT);
+            handleDirectionChange(wasdSnake, Direction.LEFT);
         } else if (event.key == "d") {
-            handleDirectionChange(snakes[1], Direction.RIGHT);
+            handleDirectionChange(wasdSnake, Direction.RIGHT);
         }
-    } else if (['i', 'j', 'k', 'l'].includes(event.key) && (!snakes[2].directionChanged || !snakes[2].hasMovedOnce)) {
+    }
+    
+    // Find snake with ijkl control scheme
+    const ijklSnake = snakes.find(s => s.controlScheme === 'ijkl');
+    if (ijklSnake && ['i', 'j', 'k', 'l'].includes(event.key) && (!ijklSnake.directionChanged || !ijklSnake.hasMovedOnce)) {
         event.preventDefault();
         if (event.key == "i") {
-            handleDirectionChange(snakes[2], Direction.UP);
+            handleDirectionChange(ijklSnake, Direction.UP);
         } else if (event.key == "k") {
-            handleDirectionChange(snakes[2], Direction.DOWN);
+            handleDirectionChange(ijklSnake, Direction.DOWN);
         } else if (event.key == "j") {
-            handleDirectionChange(snakes[2], Direction.LEFT);
+            handleDirectionChange(ijklSnake, Direction.LEFT);
         } else if (event.key == "l") {
-            handleDirectionChange(snakes[2], Direction.RIGHT);
+            handleDirectionChange(ijklSnake, Direction.RIGHT);
         }
-    } 
+    }
+    
+    // Find snake with numpad control scheme
+    const numpadSnake = snakes.find(s => s.controlScheme === 'numpad');
+    if (numpadSnake && ['8', '4', '5', '6'].includes(event.key) && (!numpadSnake.directionChanged || !numpadSnake.hasMovedOnce)) {
+        event.preventDefault();
+        if (event.key == "8") {
+            handleDirectionChange(numpadSnake, Direction.UP);
+        } else if (event.key == "5") {
+            handleDirectionChange(numpadSnake, Direction.DOWN);
+        } else if (event.key == "4") {
+            handleDirectionChange(numpadSnake, Direction.LEFT);
+        } else if (event.key == "6") {
+            handleDirectionChange(numpadSnake, Direction.RIGHT);
+        }
+    }
 }
 
 export function mousePress(event: MouseEvent, snakes: Snake[]){
+    // Find snake with mouse control scheme
+    const mouseSnake = snakes.find(s => s.controlScheme === 'mouse');
+    if (!mouseSnake) return;
+    
     let newDirection: Direction;
     
-    if (event.button==0 && snakes[3].direction == Direction.LEFT) {
+    if (event.button==0 && mouseSnake.direction == Direction.LEFT) {
         newDirection = Direction.DOWN;   
-    } else if(event.button==0 && snakes[3].direction == Direction.RIGHT) {
+    } else if(event.button==0 && mouseSnake.direction == Direction.RIGHT) {
         newDirection = Direction.UP;   
-    } else if(event.button==0 && snakes[3].direction == Direction.UP) {
+    } else if(event.button==0 && mouseSnake.direction == Direction.UP) {
         newDirection = Direction.LEFT;   
-    } else if(event.button==0 && snakes[3].direction == Direction.DOWN) {
+    } else if(event.button==0 && mouseSnake.direction == Direction.DOWN) {
         newDirection = Direction.RIGHT;   
-    } else if(event.button==2 && snakes[3].direction == Direction.LEFT) {
+    } else if(event.button==2 && mouseSnake.direction == Direction.LEFT) {
         newDirection = Direction.UP;   
-    } else if(event.button==2 && snakes[3].direction == Direction.RIGHT) {
+    } else if(event.button==2 && mouseSnake.direction == Direction.RIGHT) {
         newDirection = Direction.DOWN;   
-    } else if(event.button==2 && snakes[3].direction == Direction.UP) {
+    } else if(event.button==2 && mouseSnake.direction == Direction.UP) {
         newDirection = Direction.RIGHT;   
-    } else if(event.button==2 && snakes[3].direction == Direction.DOWN) {
+    } else if(event.button==2 && mouseSnake.direction == Direction.DOWN) {
         newDirection = Direction.LEFT;   
     }
     
     if (newDirection!) {
-        handleDirectionChange(snakes[3], newDirection);
+        handleDirectionChange(mouseSnake, newDirection);
     }
     
     event.preventDefault();
