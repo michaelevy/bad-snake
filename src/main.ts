@@ -48,6 +48,7 @@ let settings: Settings = {
     rowNum: 0,
     deadScore: false,
     invertedControls: false,
+    specialOnly: false,
     status: {
         frame: 0,
         type: Status.NORMAL
@@ -235,6 +236,7 @@ function setSettings() {
     settings.startingLength = 3;
     settings.deadScore = false;
     settings.invertedControls = false;
+    settings.specialOnly = false;
     settings.colours['0'] = '#243344'; // Reset to default dark color
 
     beginSettings.forEach((setting: SettingsType) => {
@@ -270,6 +272,9 @@ function setSettings() {
                 settings.invertedControls = true;
                 settings.colours['0'] = '#ABAC9B';
                 break;
+            case SettingsType.SPECIAL_ONLY:
+                settings.specialOnly = true;
+                break;
         }
     });
 
@@ -300,7 +305,7 @@ function createFood(grid: any[][]) {
         y = Math.floor(Math.random() * settings.rowNum);
     }
 
-    if (frame % (settings.foodInterval * 4) == (settings.foodInterval * 3)) {
+    if (settings.specialOnly || frame % (settings.foodInterval * 4) == (settings.foodInterval * 3)) {
         food = 'p';
         addEvent(new SnakeEvent(x, y, SnakeEventType.SPECIAL, 'SPECIAL FOOD', 'p', frame));
     } else {

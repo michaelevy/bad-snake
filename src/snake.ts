@@ -19,6 +19,10 @@ export default class Snake {
     addEvent: Function;
     hasMovedOnce: boolean;
     controlScheme: string;
+    pendingDash: boolean;
+    hasDashedThisDirection: boolean;
+    dashDistance: number;
+    dashUnlimited: boolean;
     constructor(x: number, y: number, direction: Direction, length: number, colour: string, id: number, settings: Settings, addEvent: Function, controlScheme: string) {
         this.x = x;
         this.y = y;
@@ -35,11 +39,21 @@ export default class Snake {
         this.addEvent = addEvent;
         this.hasMovedOnce = false;
         this.controlScheme = controlScheme;
+        this.pendingDash = false;
+        this.hasDashedThisDirection = false;
+        this.dashDistance = 3;
+        this.dashUnlimited = false;
     }
 
     update(grid: string[][], started: boolean, frame: number) {
         if (this.dead) return
-        if (started && this.hasMovedOnce) this.move(grid, frame)
+        if (started && this.hasMovedOnce) {
+            if (this.pendingDash) {
+                this.dash(grid, frame);
+            } else {
+                this.move(grid, frame);
+            }
+        }
         if (this.dead) return
         this.drawSnake(grid, frame)
     }
@@ -107,6 +121,15 @@ export default class Snake {
                         this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.FREAKY_FRIDAY, "FREAKY FRIDAY", 'm', frame))
                         grid[newX][newY] = '0'; // Clear the special food
                         return; // Don't continue moving this frame - the swap handles positioning
+                    case SnakeEventType.DASH_BOOST:
+                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.DASH_BOOST, "DASH+", 'c', frame))
+                        this.dashDistance += 1;
+                        break;
+                    case SnakeEventType.DASH_FRENZY:
+                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.DASH_FRENZY, "DASH FRENZY!", 'c', frame))
+                        this.dashUnlimited = true;
+                        this.hasDashedThisDirection = false;
+                        break;
                 }
             }
             else if (grid[newX][newY] != '0') {
@@ -138,6 +161,108 @@ export default class Snake {
                 grid[old[0]][old[1]] = '0';
             }
         }
+    }
+
+    dash(grid: string[][], frame: number) {
+        this.pendingDash = false;
+        const DASH_STEPS = this.dashDistance;
+
+        // Compute step positions, bailing early on wall hit
+        const steps: [number, number][] = [];
+        let cx = this.x, cy = this.y;
+        for (let i = 0; i < DASH_STEPS; i++) {
+            if (this.direction === Direction.UP) cy -= 1;
+            else if (this.direction === Direction.DOWN) cy += 1;
+            else if (this.direction === Direction.LEFT) cx -= 1;
+            else if (this.direction === Direction.RIGHT) cx += 1;
+
+            if (cx < 0 || cx >= this.settings.columnNum || cy < 0 || cy >= this.settings.rowNum) {
+                this.addEvent(new SnakeEvent(cx, cy, SnakeEventType.WALL, "WALL", this.colour, frame));
+                for (const [bx, by] of this.body) grid[bx][by] = this.id.toString();
+                this.dead = true;
+                return;
+            }
+            steps.push([cx, cy]);
+        }
+
+        // Add all 3 positions to front of body (step 0 first → ends up at body[2])
+        // After: body = [N2, N1, N0, origHead, B1, ...]
+        for (const step of steps) {
+            this.body.unshift([step[0], step[1]]);
+        }
+
+        // Check each step: collision at step i → cutFromIndex = DASH_STEPS - i
+        let cutFromIndex = this.body.length; // default: no cut
+        for (let i = 0; i < DASH_STEPS; i++) {
+            const [sx, sy] = steps[i];
+            const cell = grid[sx][sy];
+
+            if (cell === 'f') {
+                this.length += this.settings.foodAmount;
+                this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.EATEN, "EATEN", this.colour, frame));
+                grid[sx][sy] = this.colour;
+            } else if (cell === 'p') {
+                let event = getEventResult(this.settings.enabledEvents);
+                switch (event) {
+                    case SnakeEventType.CURSE:
+                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.CURSE, "CURSED!", 'p', frame));
+                        this.curses.push(Math.round(Math.random() * this.body.length));
+                        break;
+                    case SnakeEventType.SPEED:
+                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.SPEED, "SPEED", 'p', frame));
+                        break;
+                    case SnakeEventType.LENGTH:
+                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.LENGTH, "LENGTH", 'p', frame));
+                        this.length += 10;
+                        break;
+                    case SnakeEventType.RING_OF_FIRE:
+                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.RING_OF_FIRE, "RING OF FIRE", 'r', frame));
+                        break;
+                    case SnakeEventType.METEORS:
+                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.METEORS, "METEORS", 'r', frame));
+                        break;
+                    case SnakeEventType.FREAKY_FRIDAY:
+                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.FREAKY_FRIDAY, "FREAKY FRIDAY", 'm', frame));
+                        break;
+                    case SnakeEventType.DASH_BOOST:
+                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.DASH_BOOST, "TURBO DASH", 'c', frame));
+                        this.dashDistance += 1;
+                        break;
+                    case SnakeEventType.DASH_FRENZY:
+                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.DASH_FRENZY, "DASH FRENZY", 'c', frame));
+                        this.dashUnlimited = true;
+                        this.hasDashedThisDirection = false;
+                        break;
+                }
+            } else if (cell !== '0' && cell !== this.colour) {
+                // Collision — parts of body behind this step die
+                const cutAt = DASH_STEPS - i;
+                if (cutAt < cutFromIndex) cutFromIndex = cutAt;
+            }
+        }
+
+        // Apply truncation or normal tail removal
+        if (cutFromIndex < this.body.length) {
+            for (let i = cutFromIndex; i < this.body.length; i++) {
+                const [bx, by] = this.body[i];
+                if (grid[bx][by] === this.colour) grid[bx][by] = '0';
+            }
+            this.body.splice(cutFromIndex);
+            this.length = this.body.length;
+            } else {
+            for (let i = 0; i < DASH_STEPS; i++) {
+                if (this.body.length > this.length) {
+                    const old = this.body.pop();
+                    if (old) grid[old[0]][old[1]] = '0';
+                }
+            }
+        }
+
+        this.x = steps[DASH_STEPS - 1][0];
+        this.y = steps[DASH_STEPS - 1][1];
+        this.directionChanged = false;
+        this.prevDirection = this.direction;
+        this.hasDashedThisDirection = true;
     }
 
     getCurseString() {
@@ -178,5 +303,9 @@ export default class Snake {
         this.dead = false
         this.curses = [];
         this.hasMovedOnce = false;
+        this.pendingDash = false;
+        this.hasDashedThisDirection = false;
+        this.dashDistance = 3;
+        this.dashUnlimited = false;
     }
 }

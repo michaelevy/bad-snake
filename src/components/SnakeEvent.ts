@@ -31,6 +31,8 @@ export enum SnakeEventType {
     RING_OF_FIRE = 'RING OF FIRE',
     METEORS = 'METEORS',
     FREAKY_FRIDAY = 'FREAKY FRIDAY',
+    DASH_BOOST = 'DASH BOOST',
+    DASH_FRENZY = 'DASH FRENZY',
 }
 
 let eventRarity = {
@@ -47,6 +49,8 @@ let eventRarity = {
     [SnakeEventType.CHAT]: Rarity.NEVER,
     [SnakeEventType.RING_OF_FIRE]: Rarity.EPIC,
     [SnakeEventType.METEORS]: Rarity.EPIC,
+    [SnakeEventType.DASH_BOOST]: Rarity.COMMON,
+    [SnakeEventType.DASH_FRENZY]: Rarity.RARE,
 }
 
 export function getEventRarity(event: SnakeEventType) {

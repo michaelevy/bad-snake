@@ -11,6 +11,7 @@ export enum SettingsType {
     REALLY_LONG = 'REALLY LONG',
     DEAD_SCORE = 'DEAD SCORE',
     INVERTED_CONTROLS = 'INVERTED CONTROLS',
+    SPECIAL_ONLY = 'SPECIAL ONLY',
 }
 
 export interface StatusEvent {
@@ -32,7 +33,8 @@ let settingRarity = {
     [SettingsType.SHORT]: Rarity.COMMON,
     [SettingsType.LONG]: Rarity.COMMON,
     [SettingsType.REALLY_LONG]: Rarity.EPIC,
-    [SettingsType.INVERTED_CONTROLS]: Rarity.EPIC
+    [SettingsType.INVERTED_CONTROLS]: Rarity.EPIC,
+    [SettingsType.SPECIAL_ONLY]: Rarity.EPIC
 }
 
 export interface Settings{
@@ -54,6 +56,7 @@ export interface Settings{
     startingLength: number;
     deadScore: boolean;
     invertedControls: boolean;
+    specialOnly: boolean;
     status: StatusEvent;
     meteors: Meteor[];
 }
