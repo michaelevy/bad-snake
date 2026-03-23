@@ -191,10 +191,6 @@ export function init(controlSchemes: string[], enabledSettings:string[], enabled
             snakes.forEach(snake => {
                 if (!snake.dead) { liveSnakes++ }
                 snake.update(grid, started, frame);
-                if (settings.deadScore){
-                    segment.drawScore(grid, snake, 5);
-                    segment.drawTotalScore(grid, snake, 5);
-                }
             });
 
             if ((snakeNum > 1 && liveSnakes <= 1) || (snakeNum == 1 && liveSnakes == 0)) {
@@ -205,6 +201,12 @@ export function init(controlSchemes: string[], enabledSettings:string[], enabled
             handleStatus(grid, settings.status)
 
             drawer.drawGrid(grid, settings);
+            if (settings.deadScore) {
+                snakes.forEach(snake => {
+                    segment.drawScore(snake, 5, settings);
+                    segment.drawTotalScore(snake, 5, settings);
+                });
+            }
             if (!settings.deadScore) drawer.drawScore(snakes, settings);
             if (!settings.deadScore) drawer.drawTotalScore(snakes, settings);
             drawer.drawEvents(events, settings, frame);

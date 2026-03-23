@@ -13,6 +13,14 @@ export function initCanvas(canvasIn: HTMLCanvasElement) {
     gridOffset = 55;
 }
 
+export function getCtx(): CanvasRenderingContext2D {
+    return ctx;
+}
+
+export function getGridOffset(): number {
+    return gridOffset;
+}
+
 export function drawGrid(grid: CellValue[][], settings: Settings) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = settings.colours[settings.squareColour];
