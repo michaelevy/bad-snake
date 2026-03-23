@@ -1,7 +1,7 @@
 import { Settings, SettingsType, Status, StatusEvent, getBeginSettings } from "./components/Settings"
 import { SnakeEvent, SnakeEventType } from "./components/SnakeEvent";
 import Snake from "./snake";
-import { Direction } from "./utilities";
+import { Direction, CellType, CellValue } from "./utilities";
 import * as drawer from "./draw/draw";
 import * as segment from "./draw/Segment";
 import * as controller from "./components/controller";
@@ -147,7 +147,7 @@ export function init(controlSchemes: string[], enabledSettings:string[], enabled
     let started = false;
     handleResize();
     setSettings();
-    let grid = new Array(settings.columnNum).fill('0').map(() => new Array(settings.rowNum).fill('0'));
+    let grid = new Array(settings.columnNum).fill(CellType.EMPTY).map(() => new Array(settings.rowNum).fill(CellType.EMPTY));
 
     // window.addEventListener("resize", handleResize);
     document.addEventListener('contextmenu', event => event.preventDefault());
@@ -282,7 +282,7 @@ function setSettings() {
     settings.rowNum = Math.floor((canvas.height - 100) / settings.squareSize);
 }
 
-function executeTriggers(started: boolean, grid: any[][], fpsInterval: number) {
+function executeTriggers(started: boolean, grid: CellValue[][], fpsInterval: number) {
     if (started && (frame % settings.foodInterval) == 0) {
         createFood(grid);
     }
@@ -296,17 +296,17 @@ function executeTriggers(started: boolean, grid: any[][], fpsInterval: number) {
     return fpsInterval;
 }
 
-function createFood(grid: any[][]) {
-    let food = 'f';
+function createFood(grid: CellValue[][]) {
+    let food: CellValue = CellType.FOOD;
     let x = Math.floor(Math.random() * settings.columnNum);
     let y = Math.floor(Math.random() * settings.rowNum);
-    while (grid[x][y] != '0') {
+    while (grid[x][y] != CellType.EMPTY) {
         x = Math.floor(Math.random() * settings.columnNum);
         y = Math.floor(Math.random() * settings.rowNum);
     }
 
     if (settings.specialOnly || frame % (settings.foodInterval * 4) == (settings.foodInterval * 3)) {
-        food = 'p';
+        food = CellType.SPECIAL;
         addEvent(new SnakeEvent(x, y, SnakeEventType.SPECIAL, 'SPECIAL FOOD', 'p', frame));
     } else {
         addEvent(new SnakeEvent(x, y, SnakeEventType.FOOD, 'FOOD', 'f', frame));
@@ -326,7 +326,7 @@ function spawnMeteor() {
     addEvent(new SnakeEvent(x, y, SnakeEventType.CHAT, 'INCOMING!', 'y', frame));
 }
 
-function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: any[][]) {
+function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: CellValue[][]) {
     // Track winner before resetting
     const aliveSnakes = snakes.filter(snake => !snake.dead);
     if (aliveSnakes.length === 1) {
@@ -358,7 +358,7 @@ function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: any
         snake.reset();
     });
     fpsInterval = 1000 / settings.fps;
-    grid = new Array(settings.columnNum).fill('0').map(() => new Array(settings.rowNum).fill('0'));
+    grid = new Array(settings.columnNum).fill(CellType.EMPTY).map(() => new Array(settings.rowNum).fill(CellType.EMPTY));
     frame = 0;
     events = [];
     settings.meteors = [];
@@ -380,7 +380,7 @@ function createSnakes(controlSchemes: string[], snakes: Snake[]) {
         snakes.push(new Snake(x, y, direction, length, colour, i + 1, settings, addEvent, controlSchemes[i]));
     }
 }
-function handleStatus(grid: any[][], status: StatusEvent) {
+function handleStatus(grid: CellValue[][], status: StatusEvent) {
     switch (status.type) {
         case Status.NORMAL:
             break;
@@ -389,7 +389,7 @@ function handleStatus(grid: any[][], status: StatusEvent) {
             for (let i = 0; i < settings.columnNum; i++) {
                 for (let j = 0; j < settings.rowNum; j++) {
                     if (i < ringSize || i >= settings.columnNum - ringSize || j < ringSize || j >= settings.rowNum - ringSize) {
-                        grid[i][j] = 'r';
+                        grid[i][j] = CellType.HAZARD;
                     }
                 }
             }
@@ -402,7 +402,7 @@ function handleStatus(grid: any[][], status: StatusEvent) {
                     for (let j = 0; j < settings.rowNum; j++) {
                         if (meteor.containsPoint(i, j)) {
                             if (meteor.isInImpactPhase(frame)) {
-                                grid[i][j] = 'r';
+                                grid[i][j] = CellType.HAZARD;
                             }
                         }
                     }

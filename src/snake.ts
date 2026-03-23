@@ -1,4 +1,4 @@
-import { Direction } from './utilities';
+import { Direction, CellType, CellValue } from './utilities';
 import { SnakeEvent, SnakeEventType } from './components/SnakeEvent';
 import { getEventResult, Settings } from './components/Settings';
 
@@ -45,7 +45,7 @@ export default class Snake {
         this.dashUnlimited = false;
     }
 
-    update(grid: string[][], started: boolean, frame: number) {
+    update(grid: CellValue[][], started: boolean, frame: number) {
         if (this.dead) return
         if (started && this.hasMovedOnce) {
             if (this.pendingDash) {
@@ -58,7 +58,7 @@ export default class Snake {
         this.drawSnake(grid, frame)
     }
 
-    move(grid: string[][], frame: number) {
+    move(grid: CellValue[][], frame: number) {
         let newX = this.x;
         let newY = this.y;
         let die = false;
@@ -88,12 +88,12 @@ export default class Snake {
             die = true
             this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.WALL, "WALL", this.colour, frame))
         } else {
-            if (grid[newX][newY] == 'f') {
+            if (grid[newX][newY] == CellType.FOOD) {
                 this.length += this.settings.foodAmount;
                 this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.EATEN, "EATEN", this.colour, frame))
                 grid[newX][newY] = this.colour;
 
-            } else if (grid[newX][newY] == 'p') {
+            } else if (grid[newX][newY] == CellType.SPECIAL) {
                 // roll event with rarity taken into account
                 let event = getEventResult(this.settings.enabledEvents);
                 console.log('Enabled events:', this.settings.enabledEvents);
@@ -119,7 +119,7 @@ export default class Snake {
                     break;
                     case SnakeEventType.FREAKY_FRIDAY:
                         this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.FREAKY_FRIDAY, "FREAKY FRIDAY", 'm', frame))
-                        grid[newX][newY] = '0'; // Clear the special food
+                        grid[newX][newY] = CellType.EMPTY; // Clear the special food
                         return; // Don't continue moving this frame - the swap handles positioning
                     case SnakeEventType.DASH_BOOST:
                         this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.DASH_BOOST, "DASH+", 'c', frame))
@@ -132,7 +132,7 @@ export default class Snake {
                         break;
                 }
             }
-            else if (grid[newX][newY] != '0') {
+            else if (grid[newX][newY] != CellType.EMPTY) {
                 die = true
                 this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.SNAKED, "SNAKED", this.colour, frame))
             }
@@ -158,12 +158,12 @@ export default class Snake {
         if (this.body.length > this.length) {
             let old = this.body.pop();
             if (old) {
-                grid[old[0]][old[1]] = '0';
+                grid[old[0]][old[1]] = CellType.EMPTY;
             }
         }
     }
 
-    dash(grid: string[][], frame: number) {
+    dash(grid: CellValue[][], frame: number) {
         this.pendingDash = false;
         const DASH_STEPS = this.dashDistance;
 
@@ -197,11 +197,11 @@ export default class Snake {
             const [sx, sy] = steps[i];
             const cell = grid[sx][sy];
 
-            if (cell === 'f') {
+            if (cell === CellType.FOOD) {
                 this.length += this.settings.foodAmount;
                 this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.EATEN, "EATEN", this.colour, frame));
                 grid[sx][sy] = this.colour;
-            } else if (cell === 'p') {
+            } else if (cell === CellType.SPECIAL) {
                 let event = getEventResult(this.settings.enabledEvents);
                 switch (event) {
                     case SnakeEventType.CURSE:
@@ -234,7 +234,7 @@ export default class Snake {
                         this.hasDashedThisDirection = false;
                         break;
                 }
-            } else if (cell !== '0' && cell !== this.colour) {
+            } else if (cell !== CellType.EMPTY && cell !== this.colour) {
                 // Collision — parts of body behind this step die
                 const cutAt = DASH_STEPS - i;
                 if (cutAt < cutFromIndex) cutFromIndex = cutAt;
@@ -245,7 +245,7 @@ export default class Snake {
         if (cutFromIndex < this.body.length) {
             for (let i = cutFromIndex; i < this.body.length; i++) {
                 const [bx, by] = this.body[i];
-                if (grid[bx][by] === this.colour) grid[bx][by] = '0';
+                if (grid[bx][by] === this.colour) grid[bx][by] = CellType.EMPTY;
             }
             this.body.splice(cutFromIndex);
             this.length = this.body.length;
@@ -253,7 +253,7 @@ export default class Snake {
             for (let i = 0; i < DASH_STEPS; i++) {
                 if (this.body.length > this.length) {
                     const old = this.body.pop();
-                    if (old) grid[old[0]][old[1]] = '0';
+                    if (old) grid[old[0]][old[1]] = CellType.EMPTY;
                 }
             }
         }
@@ -270,7 +270,7 @@ export default class Snake {
         return this.settings.curseStrings[curse]
     }
 
-    drawSnake(grid: string[][], frame: number) {
+    drawSnake(grid: CellValue[][], frame: number) {
         for (let i = 0; i < this.body.length; i++) {
             let x = this.body[i][0];
             let y = this.body[i][1];

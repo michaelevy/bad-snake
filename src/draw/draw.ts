@@ -1,7 +1,7 @@
 import { getSettingRarity, Settings, SettingsType } from "../components/Settings";
 import { SnakeEvent } from "../components/SnakeEvent";
 import Snake from "../snake";
-import { Rarity } from "../utilities";
+import { Rarity, CellValue } from "../utilities";
 
 let ctx: CanvasRenderingContext2D;
 let canvas: HTMLCanvasElement;
@@ -13,7 +13,7 @@ export function initCanvas(canvasIn: HTMLCanvasElement) {
     gridOffset = 55;
 }
 
-export function drawGrid(grid: string[][], settings: Settings) {
+export function drawGrid(grid: CellValue[][], settings: Settings) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = settings.colours[settings.squareColour];
     for (let i = 0; i < settings.columnNum; i++) {

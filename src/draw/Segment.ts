@@ -1,5 +1,6 @@
 import { setColour } from "../draw/draw";
 import Snake from "../snake";
+import { CellValue } from "../utilities";
 
 function segmentIndexToGridCoords(index: number){
     switch (index){
@@ -49,14 +50,14 @@ function numberToSegmentDisplay(number: any) {
 
 }  
 
-export function drawScore(grid: string[][], snake: Snake, scoreMargin: number){
+export function drawScore(grid: CellValue[][], snake: Snake, scoreMargin: number){
     let segments = numberToSegmentDisplay(snake.length);
     let x = scoreMargin;
     let y = 5;
     drawSegment(segments, x, y, snake, grid);
 }
 
-export function drawTotalScore(grid: string[][], snake: Snake, scoreMargin: number){
+export function drawTotalScore(grid: CellValue[][], snake: Snake, scoreMargin: number){
     let segments = numberToSegmentDisplay(snake.totalScore);
     let x = grid.length - segments.length * scoreMargin - scoreMargin ;
     let y = 5;
@@ -64,7 +65,7 @@ export function drawTotalScore(grid: string[][], snake: Snake, scoreMargin: numb
 }
 
 
-function drawSegment(segments: number[][], x: number, y: number, snake: Snake, grid: string[][]) {
+function drawSegment(segments: number[][], x: number, y: number, snake: Snake, grid: CellValue[][]) {
     segments.forEach((segment: number[], index: number) => {
         let segmentX = x + (index * 5);
         let segmentY = y + (snake.id * 6);
