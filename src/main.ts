@@ -54,6 +54,7 @@ let settings: Settings = {
         type: Status.NORMAL
     },
     meteors: [],
+    frozenUntilFrame: 0,
 }
 
 let frame = 0;

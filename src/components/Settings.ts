@@ -59,6 +59,7 @@ export interface Settings{
     specialOnly: boolean;
     status: StatusEvent;
     meteors: Meteor[];
+    frozenUntilFrame: number;
 }
 
 export function getBeginSettings(enabledSettings: SettingsType[]){
