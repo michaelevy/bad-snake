@@ -174,7 +174,8 @@ export default class Snake {
                 this.length += this.settings.foodAmount;
                 this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.EATEN, "EATEN", this.colour, frame));
             } else if (cell === CellType.SPECIAL) {
-                this.handleSpecialFood(sx, sy, frame);
+                const shouldAbort = this.handleSpecialFood(sx, sy, frame);
+                if (shouldAbort) return null;
             } else if (cell !== CellType.EMPTY && cell !== this.colour) {
                 const cutAt = DASH_STEPS - i;
                 if (cutAt < cutFromIndex) cutFromIndex = cutAt;
