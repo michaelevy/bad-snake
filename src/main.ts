@@ -1,11 +1,19 @@
-import { Settings, SettingsType, Status, StatusEvent, getBeginSettings } from "./components/Settings"
+import { Settings, SettingsType, Status, getBeginSettings } from "./components/Settings"
 import { SnakeEvent, SnakeEventType } from "./components/SnakeEvent";
 import Snake from "./snake";
 import { Direction, CellType, CellValue } from "./utilities";
 import * as drawer from "./draw/draw";
 import * as segment from "./draw/Segment";
 import * as controller from "./components/controller";
-import { Meteor } from "./components/Meteor";
+import { EventRegistry, EventContext } from "./components/EventEffect";
+import { SpeedEffect } from "./components/effects/SpeedEffect";
+import { RingOfFireEffect } from "./components/effects/RingOfFireEffect";
+import { MeteorEffect } from "./components/effects/MeteorEffect";
+import { FreakFridayEffect } from "./components/effects/FreakFridayEffect";
+import { CurseEffect } from "./components/effects/CurseEffect";
+import { LengthEffect } from "./components/effects/LengthEffect";
+import { DashBoostEffect } from "./components/effects/DashBoostEffect";
+import { DashFrenzyEffect } from "./components/effects/DashFrenzyEffect";
 
 let settings: Settings = {
     squareSize: 25,
@@ -57,10 +65,22 @@ let settings: Settings = {
     frozenUntilFrame: 0,
 }
 
+const eventRegistry = new EventRegistry();
+eventRegistry.register(new SpeedEffect());
+eventRegistry.register(new RingOfFireEffect());
+eventRegistry.register(new MeteorEffect());
+eventRegistry.register(new FreakFridayEffect());
+eventRegistry.register(new CurseEffect());
+eventRegistry.register(new LengthEffect());
+eventRegistry.register(new DashBoostEffect());
+eventRegistry.register(new DashFrenzyEffect());
+
 let frame = 0;
 let fpsInterval = 1000 / settings.fps;
 let canvas: HTMLCanvasElement;
 let events: SnakeEvent[] = []
+
+let currentGrid: CellValue[][] = [];
 
 let allSnakes: Snake[] = [];
 let roundWinner: Snake | null = null;
@@ -70,62 +90,21 @@ let showWinnerUntil: number = 0;
 
 export function addEvent(event: SnakeEvent) {
     events.push(event);
-    console.log(`addEvent called with type: ${event.type}, checking against FREAKY_FRIDAY: ${SnakeEventType.FREAKY_FRIDAY}`);
-    if (event.type == SnakeEventType.SPEED) {
-        settings.fps = settings.fps + 5
-        fpsInterval = 1000 / settings.fps;
-        console.log(settings.fps);
-    } else if (event.type == SnakeEventType.RING_OF_FIRE){
-        settings.status = {
-            frame: event.frame,
-            type: Status.RING_OF_FIRE
-        }
-    } else if (event.type == SnakeEventType.METEORS){
-        settings.status = {
-            frame: event.frame,
-            type: Status.METEORS
-        }
-    } else if (event.type == SnakeEventType.FREAKY_FRIDAY){
-        console.log('Triggering FREAKY_FRIDAY swap');
-        swapSnakeBodies();
-    }
-    console.log(`Event added: ${event.colour} ${event.type} at frame ${event.frame}`);
-}
 
-function swapSnakeBodies() {
-    const aliveSnakes = allSnakes.filter(snake => !snake.dead);
-    console.log(`FREAKY FRIDAY! Swapping ${aliveSnakes.length} snakes`);
-    if (aliveSnakes.length < 2) {
-        console.log('Not enough snakes to swap');
-        return;
-    }
+    // Build context for the registry
+    const context: EventContext = {
+        grid: currentGrid,
+        snakes: allSnakes,
+        settings: settings,
+        frame: event.frame,
+        addEvent: addEvent,
+    };
 
-    const snakeData = aliveSnakes.map(snake => ({
-        body: snake.body.map(pos => [...pos]),
-        length: snake.length,
-        x: snake.x,
-        y: snake.y,
-        direction: snake.direction,
-        prevDirection: snake.prevDirection,
-        curses: [...snake.curses]
-    }));
+    // Dispatch to the appropriate effect handler
+    eventRegistry.dispatch(event.type, context);
 
-    console.log('Before swap:', aliveSnakes.map(s => `(${s.x},${s.y})`));
-
-    for (let i = 0; i < aliveSnakes.length; i++) {
-        const nextIndex = (i + 1) % aliveSnakes.length;
-        const nextData = snakeData[nextIndex];
-
-        aliveSnakes[i].body = nextData.body;
-        aliveSnakes[i].length = nextData.length;
-        aliveSnakes[i].x = nextData.x;
-        aliveSnakes[i].y = nextData.y;
-        aliveSnakes[i].direction = nextData.direction;
-        aliveSnakes[i].prevDirection = nextData.prevDirection;
-        aliveSnakes[i].curses = nextData.curses;
-    }
-
-    console.log('After swap:', aliveSnakes.map(s => `(${s.x},${s.y})`));
+    // Update fpsInterval if speed changed
+    fpsInterval = 1000 / settings.fps;
 }
 
 function handleResize() {
@@ -149,6 +128,7 @@ export function init(controlSchemes: string[], enabledSettings:string[], enabled
     handleResize();
     setSettings();
     let grid = new Array(settings.columnNum).fill(CellType.EMPTY).map(() => new Array(settings.rowNum).fill(CellType.EMPTY));
+    currentGrid = grid;
 
     // window.addEventListener("resize", handleResize);
     document.addEventListener('contextmenu', event => event.preventDefault());
@@ -188,10 +168,16 @@ export function init(controlSchemes: string[], enabledSettings:string[], enabled
             then = now - (elapsed % fpsInterval);
 
             let liveSnakes = 0;
+            const frozen = frame < settings.frozenUntilFrame;
 
             snakes.forEach(snake => {
                 if (!snake.dead) { liveSnakes++ }
-                snake.update(grid, started, frame);
+                if (!frozen) {
+                    snake.update(grid, started, frame);
+                } else {
+                    // Still draw the snake even when frozen
+                    if (!snake.dead) snake.drawSnake(grid, frame);
+                }
             });
 
             if ((snakeNum > 1 && liveSnakes <= 1) || (snakeNum == 1 && liveSnakes == 0)) {
@@ -199,7 +185,16 @@ export function init(controlSchemes: string[], enabledSettings:string[], enabled
             }
 
             fpsInterval = executeTriggers(started, grid, fpsInterval);
-            handleStatus(grid, settings.status)
+
+            // Tick all ongoing effects
+            const tickContext: EventContext = {
+                grid: grid,
+                snakes: snakes,
+                settings: settings,
+                frame: frame,
+                addEvent: addEvent,
+            };
+            eventRegistry.tickAll(tickContext);
 
             drawer.drawGrid(grid, settings);
             if (settings.deadScore) {
@@ -293,9 +288,6 @@ function executeTriggers(started: boolean, grid: CellValue[][], fpsInterval: num
         settings.fps += 1;
         fpsInterval = 1000 / settings.fps;
     }
-    if (started && settings.status.type === Status.METEORS && Math.random() < 0.05) {
-        spawnMeteor();
-    }
     return fpsInterval;
 }
 
@@ -316,17 +308,6 @@ function createFood(grid: CellValue[][]) {
     }
 
     grid[x][y] = food;
-}
-
-function spawnMeteor() {
-    const x = Math.floor(Math.random() * settings.columnNum);
-    const y = Math.floor(Math.random() * settings.rowNum);
-    const radius = Math.floor(Math.random() * 5) + 3; // Random radius between 3 and 7
-
-    const meteor = new Meteor(x, y, radius, frame);
-    settings.meteors.push(meteor);
-
-    addEvent(new SnakeEvent(x, y, SnakeEventType.CHAT, 'INCOMING!', 'y', frame));
 }
 
 function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: CellValue[][]) {
@@ -362,9 +343,11 @@ function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: Cel
     });
     fpsInterval = 1000 / settings.fps;
     grid = new Array(settings.columnNum).fill(CellType.EMPTY).map(() => new Array(settings.rowNum).fill(CellType.EMPTY));
+    currentGrid = grid;
     frame = 0;
     events = [];
     settings.meteors = [];
+    settings.frozenUntilFrame = 0;
     settings.status = {
         frame: 0,
         type: Status.NORMAL
@@ -381,38 +364,5 @@ function createSnakes(controlSchemes: string[], snakes: Snake[]) {
         let length = settings.startingLength;
         let colour = colours[i % colours.length];
         snakes.push(new Snake(x, y, direction, length, colour, i + 1, settings, addEvent, controlSchemes[i]));
-    }
-}
-function handleStatus(grid: CellValue[][], status: StatusEvent) {
-    switch (status.type) {
-        case Status.NORMAL:
-            break;
-        case Status.RING_OF_FIRE:
-            let ringSize = Math.floor((frame - status.frame) / 5);
-            for (let i = 0; i < settings.columnNum; i++) {
-                for (let j = 0; j < settings.rowNum; j++) {
-                    if (i < ringSize || i >= settings.columnNum - ringSize || j < ringSize || j >= settings.rowNum - ringSize) {
-                        grid[i][j] = CellType.HAZARD;
-                    }
-                }
-            }
-            break;
-        case Status.METEORS:
-            settings.meteors = settings.meteors.filter(meteor => !meteor.isFinished(frame));
-
-            settings.meteors.forEach(meteor => {
-                for (let i = 0; i < settings.columnNum; i++) {
-                    for (let j = 0; j < settings.rowNum; j++) {
-                        if (meteor.containsPoint(i, j)) {
-                            if (meteor.isInImpactPhase(frame)) {
-                                grid[i][j] = CellType.HAZARD;
-                            }
-                        }
-                    }
-                }
-            });
-            break;
-        default:
-            console.warn("Unhandled status:", status);
     }
 }
