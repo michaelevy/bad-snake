@@ -99,14 +99,17 @@ export default class Snake {
             return null;
         }
 
+        // TODO: ARCHITECTURAL TENSION - Collision detection is duplicated here (snake pre-check)
+        // and in GameGrid.resolveMove(). Snake pre-checks deaths and returns null, so the resolver's
+        // death paths are dead code. Future: Consolidate into resolver only and have snakes commit intents.
         const targetCell = gameGrid.getCell(newX, newY);
 
         if (targetCell === CellType.FOOD) {
             this.length += this.settings.foodAmount;
             this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.EATEN, "EATEN", this.colour, frame));
         } else if (targetCell === CellType.SPECIAL) {
-            this.handleSpecialFood(newX, newY, frame);
-            if (this.dead) return null;
+            const shouldAbort = this.handleSpecialFood(newX, newY, frame);
+            if (this.dead || shouldAbort) return null;
         } else if (targetCell !== CellType.EMPTY) {
             this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.SNAKED, "SNAKED", this.colour, frame));
             this.dead = true;
@@ -210,39 +213,45 @@ export default class Snake {
         };
     }
 
-    private handleSpecialFood(x: number, y: number, frame: number): void {
+    /**
+     * Handle special food consumption and trigger associated events.
+     * Returns true if the move should abort (e.g., FREAKY_FRIDAY swap), false otherwise.
+     */
+    private handleSpecialFood(x: number, y: number, frame: number): boolean {
         const event = getEventResult(this.settings.enabledEvents);
         switch (event) {
             case SnakeEventType.CURSE:
                 this.addEvent(new SnakeEvent(x, y, SnakeEventType.CURSE, "CURSED!", 'p', frame));
                 this.curses.push(Math.round(Math.random() * this.body.length));
-                break;
+                return false;
             case SnakeEventType.SPEED:
                 this.addEvent(new SnakeEvent(x, y, SnakeEventType.SPEED, "SPEED", 'p', frame));
-                break;
+                return false;
             case SnakeEventType.LENGTH:
                 this.addEvent(new SnakeEvent(x, y, SnakeEventType.LENGTH, "LENGTH", 'p', frame));
                 this.length += 10;
-                break;
+                return false;
             case SnakeEventType.RING_OF_FIRE:
                 this.addEvent(new SnakeEvent(x, y, SnakeEventType.RING_OF_FIRE, "RING OF FIRE", 'r', frame));
-                break;
+                return false;
             case SnakeEventType.METEORS:
                 this.addEvent(new SnakeEvent(x, y, SnakeEventType.METEORS, "METEORS", 'r', frame));
-                break;
+                return false;
             case SnakeEventType.FREAKY_FRIDAY:
                 this.addEvent(new SnakeEvent(x, y, SnakeEventType.FREAKY_FRIDAY, "FREAKY FRIDAY", 'm', frame));
-                break;
+                // Abort the move: FreakFridayEffect.onTrigger will swap all snakes synchronously
+                return true;
             case SnakeEventType.DASH_BOOST:
                 this.addEvent(new SnakeEvent(x, y, SnakeEventType.DASH_BOOST, "DASH+", 'c', frame));
                 this.dashDistance += 1;
-                break;
+                return false;
             case SnakeEventType.DASH_FRENZY:
                 this.addEvent(new SnakeEvent(x, y, SnakeEventType.DASH_FRENZY, "DASH FRENZY!", 'c', frame));
                 this.dashUnlimited = true;
                 this.hasDashedThisDirection = false;
-                break;
+                return false;
         }
+        return false;
     }
 
     /**

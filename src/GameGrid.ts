@@ -116,6 +116,10 @@ export class GameGrid {
     private resolveMove(intent: MoveIntent): CollisionResult {
         const [tx, ty] = intent.to;
 
+        // TODO: ARCHITECTURAL TENSION - These death checks are dead code since snake.ts pre-checks
+        // all deaths and returns null before queuing an intent. The resolver path is unreachable.
+        // Future: Remove these checks once snakes commit intents regardless of outcome.
+
         // Check bounds
         if (!this.isInBounds(tx, ty)) {
             // Mark death body
@@ -137,6 +141,8 @@ export class GameGrid {
 
         // Check special food
         if (targetCell === CellType.SPECIAL) {
+            // Clear the special food cell before writing body
+            this.setCell(tx, ty, CellType.EMPTY);
             this.clearTrail(intent.trail);
             this.writeBody(intent.bodySegments, intent.snakeColour);
             return { snakeId: intent.snakeId, outcome: { type: 'special', cellType: CellType.SPECIAL } };
@@ -160,6 +166,8 @@ export class GameGrid {
 
         // Empty cell -- safe move
         this.clearTrail(intent.trail);
+        // TODO: REDUNDANCY - Body is written here AND again in main.ts via snake.drawSnakeToGrid() for alive snakes.
+        // This is duplicated work. Future: Remove writeBody here and rely on drawSnakeToGrid for all body rendering.
         this.writeBody(intent.bodySegments, intent.snakeColour);
         return { snakeId: intent.snakeId, outcome: { type: 'empty' } };
     }
