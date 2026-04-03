@@ -14,6 +14,7 @@ import { CurseEffect } from "./components/effects/CurseEffect";
 import { LengthEffect } from "./components/effects/LengthEffect";
 import { DashBoostEffect } from "./components/effects/DashBoostEffect";
 import { DashFrenzyEffect } from "./components/effects/DashFrenzyEffect";
+import { GameGrid } from "./GameGrid";
 
 let settings: Settings = {
     squareSize: 25,
@@ -80,7 +81,7 @@ let fpsInterval = 1000 / settings.fps;
 let canvas: HTMLCanvasElement;
 let events: SnakeEvent[] = []
 
-let currentGrid: CellValue[][] = [];
+let gameGrid: GameGrid;
 
 let allSnakes: Snake[] = [];
 let roundWinner: Snake | null = null;
@@ -93,7 +94,7 @@ export function addEvent(event: SnakeEvent) {
 
     // Build context for the registry
     const context: EventContext = {
-        grid: currentGrid,
+        grid: gameGrid.getRawGrid(),
         snakes: allSnakes,
         settings: settings,
         frame: event.frame,
@@ -127,8 +128,7 @@ export function init(controlSchemes: string[], enabledSettings:string[], enabled
     let started = false;
     handleResize();
     setSettings();
-    let grid = new Array(settings.columnNum).fill(CellType.EMPTY).map(() => new Array(settings.rowNum).fill(CellType.EMPTY));
-    currentGrid = grid;
+    gameGrid = new GameGrid(settings.columnNum, settings.rowNum);
 
     // window.addEventListener("resize", handleResize);
     document.addEventListener('contextmenu', event => event.preventDefault());
@@ -172,23 +172,41 @@ export function init(controlSchemes: string[], enabledSettings:string[], enabled
 
             snakes.forEach(snake => {
                 if (!snake.dead) { liveSnakes++ }
-                if (!frozen) {
-                    snake.update(grid, started, frame);
-                } else {
-                    // Still draw the snake even when frozen
-                    if (!snake.dead) snake.drawSnake(grid, frame);
+            });
+
+            if (!frozen) {
+                // Step 1: Collect intents (snakes read grid but do NOT write)
+                snakes.forEach(snake => {
+                    const intent = snake.update(gameGrid, started, frame);
+                    if (intent) {
+                        gameGrid.queueIntent(intent);
+                    }
+                    if (snake.dead) {
+                        snake.markDead(gameGrid);
+                    }
+                });
+
+                // Step 2: Resolve all intents simultaneously
+                gameGrid.resolveAll();
+                // Results can be used for future features (e.g. simultaneous head-on collision detection)
+            }
+
+            // Step 3: Write surviving snake bodies to grid for rendering
+            snakes.forEach(snake => {
+                if (!snake.dead) {
+                    snake.drawSnakeToGrid(gameGrid, frame);
                 }
             });
 
             if ((snakeNum > 1 && liveSnakes <= 1) || (snakeNum == 1 && liveSnakes == 0)) {
-                ({ started, fpsInterval, grid } = reset(started, snakes, fpsInterval, grid));
+                ({ started, fpsInterval } = reset(started, snakes, fpsInterval));
             }
 
-            fpsInterval = executeTriggers(started, grid, fpsInterval);
+            executeTriggers(started);
 
             // Tick all ongoing effects
             const tickContext: EventContext = {
-                grid: grid,
+                grid: gameGrid.getRawGrid(),
                 snakes: snakes,
                 settings: settings,
                 frame: frame,
@@ -196,7 +214,7 @@ export function init(controlSchemes: string[], enabledSettings:string[], enabled
             };
             eventRegistry.tickAll(tickContext);
 
-            drawer.drawGrid(grid, settings);
+            drawer.drawGrid(gameGrid.getRawGrid(), settings);
             if (settings.deadScore) {
                 snakes.forEach(snake => {
                     segment.drawScore(snake, 5, settings);
@@ -280,25 +298,22 @@ function setSettings() {
     settings.rowNum = Math.floor((canvas.height - 100) / settings.squareSize);
 }
 
-function executeTriggers(started: boolean, grid: CellValue[][], fpsInterval: number) {
+function executeTriggers(started: boolean) {
     if (started && (frame % settings.foodInterval) == 0) {
-        createFood(grid);
+        createFood();
     }
     if (started && (frame % 100 == 0)) {
         settings.fps += 1;
         fpsInterval = 1000 / settings.fps;
     }
-    return fpsInterval;
 }
 
-function createFood(grid: CellValue[][]) {
+function createFood() {
     let food: CellValue = CellType.FOOD;
-    let x = Math.floor(Math.random() * settings.columnNum);
-    let y = Math.floor(Math.random() * settings.rowNum);
-    while (grid[x][y] != CellType.EMPTY) {
-        x = Math.floor(Math.random() * settings.columnNum);
-        y = Math.floor(Math.random() * settings.rowNum);
-    }
+    const pos = gameGrid.findEmpty();
+    if (!pos) return; // grid full
+
+    const [x, y] = pos;
 
     if (settings.specialOnly || frame % (settings.foodInterval * 4) == (settings.foodInterval * 3)) {
         food = CellType.SPECIAL;
@@ -307,10 +322,10 @@ function createFood(grid: CellValue[][]) {
         addEvent(new SnakeEvent(x, y, SnakeEventType.FOOD, 'FOOD', 'f', frame));
     }
 
-    grid[x][y] = food;
+    gameGrid.setCell(x, y, food);
 }
 
-function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: CellValue[][]) {
+function reset(started: boolean, snakes: Snake[], fpsInterval: number) {
     // Track winner before resetting
     const aliveSnakes = snakes.filter(snake => !snake.dead);
     if (aliveSnakes.length === 1) {
@@ -342,8 +357,7 @@ function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: Cel
         snake.reset();
     });
     fpsInterval = 1000 / settings.fps;
-    grid = new Array(settings.columnNum).fill(CellType.EMPTY).map(() => new Array(settings.rowNum).fill(CellType.EMPTY));
-    currentGrid = grid;
+    gameGrid.reset(settings.columnNum, settings.rowNum);
     frame = 0;
     events = [];
     settings.meteors = [];
@@ -352,7 +366,7 @@ function reset(started: boolean, snakes: Snake[], fpsInterval: number, grid: Cel
         frame: 0,
         type: Status.NORMAL
     }
-    return { started, fpsInterval, grid };
+    return { started, fpsInterval };
 }
 
 function createSnakes(controlSchemes: string[], snakes: Snake[]) {
@@ -360,7 +374,7 @@ function createSnakes(controlSchemes: string[], snakes: Snake[]) {
     for (let i = 0; i < controlSchemes.length; i++) {
         let x = Math.floor(Math.random() * (settings.columnNum - settings.spawnMargin * 2)) + settings.spawnMargin;
         let y = Math.floor(Math.random() * (settings.rowNum - settings.spawnMargin * 2)) + settings.spawnMargin;
-        let direction = ['up', 'down', 'left', 'right'][Math.floor(Math.random() * 4)] as Direction;
+        let direction = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT][Math.floor(Math.random() * 4)];
         let length = settings.startingLength;
         let colour = colours[i % colours.length];
         snakes.push(new Snake(x, y, direction, length, colour, i + 1, settings, addEvent, controlSchemes[i]));

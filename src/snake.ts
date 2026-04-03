@@ -1,6 +1,7 @@
-import { Direction, CellType, CellValue } from './utilities';
+import { Direction, CellType } from './utilities';
 import { SnakeEvent, SnakeEventType } from './components/SnakeEvent';
 import { getEventResult, Settings } from './components/Settings';
+import { GameGrid, MoveIntent, DashIntent, SnakeIntent } from './GameGrid';
 
 export default class Snake {
     x: number;
@@ -15,7 +16,7 @@ export default class Snake {
     totalScore: number;
     directionChanged: boolean;
     id: number;
-    settings: Settings
+    settings: Settings;
     addEvent: Function;
     hasMovedOnce: boolean;
     controlScheme: string;
@@ -23,6 +24,7 @@ export default class Snake {
     hasDashedThisDirection: boolean;
     dashDistance: number;
     dashUnlimited: boolean;
+
     constructor(x: number, y: number, direction: Direction, length: number, colour: string, id: number, settings: Settings, addEvent: Function, controlScheme: string) {
         this.x = x;
         this.y = y;
@@ -31,7 +33,7 @@ export default class Snake {
         this.body = [[x, y]];
         this.curses = [];
         this.colour = colour;
-        this.dead = false
+        this.dead = false;
         this.id = id;
         this.totalScore = 0;
         this.directionChanged = false;
@@ -45,129 +47,99 @@ export default class Snake {
         this.dashUnlimited = false;
     }
 
-    update(grid: CellValue[][], started: boolean, frame: number) {
-        if (this.dead) return
-        if (started && this.hasMovedOnce) {
-            if (this.pendingDash) {
-                this.dash(grid, frame);
-            } else {
-                this.move(grid, frame);
-            }
+    /**
+     * Compute the snake's intended move this frame.
+     * Returns null if the snake doesn't move (dead, not started, frozen).
+     * The snake updates its own internal state (body, position) optimistically.
+     * It does NOT write to the grid -- the game loop calls resolveAll() for that.
+     */
+    update(gameGrid: GameGrid, started: boolean, frame: number): SnakeIntent | null {
+        if (this.dead) return null;
+        if (!started || !this.hasMovedOnce) return null;
+
+        if (this.pendingDash) {
+            return this.computeDash(gameGrid, frame);
+        } else {
+            return this.computeMove(gameGrid, frame);
         }
-        if (this.dead) return
-        this.drawSnake(grid, frame)
     }
 
-    move(grid: CellValue[][], frame: number) {
+    private computeMove(gameGrid: GameGrid, frame: number): MoveIntent | null {
         let newX = this.x;
         let newY = this.y;
         let die = false;
 
-        if (this.direction == 'up') {
-            if (this.prevDirection == 'down') { die = true };
+        if (this.direction == Direction.UP) {
+            if (this.prevDirection == Direction.DOWN) { die = true; }
             newY -= 1;
-        } else if (this.direction == 'down') {
-            if (this.prevDirection == 'up') { die = true };
+        } else if (this.direction == Direction.DOWN) {
+            if (this.prevDirection == Direction.UP) { die = true; }
             newY += 1;
-        } else if (this.direction == 'left') {
-            if (this.prevDirection == 'right') { die = true };
+        } else if (this.direction == Direction.LEFT) {
+            if (this.prevDirection == Direction.RIGHT) { die = true; }
             newX -= 1;
-        } else if (this.direction == 'right') {
-            if (this.prevDirection == 'left') { die = true };
+        } else if (this.direction == Direction.RIGHT) {
+            if (this.prevDirection == Direction.LEFT) { die = true; }
             newX += 1;
         }
 
         if (frame < 5) {
-            die = false
+            die = false;
         }
 
-        if (die === true) {
-            this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.BACKWARDS_MOMENT, "BACKWARDS MOMENT", this.colour, frame))
-        }
-        else if (newX < 0 || newX >= this.settings.columnNum || newY < 0 || newY >= this.settings.rowNum || die) {
-            die = true
-            this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.WALL, "WALL", this.colour, frame))
-        } else {
-            if (grid[newX][newY] == CellType.FOOD) {
-                this.length += this.settings.foodAmount;
-                this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.EATEN, "EATEN", this.colour, frame))
-                grid[newX][newY] = this.colour;
-
-            } else if (grid[newX][newY] == CellType.SPECIAL) {
-                // roll event with rarity taken into account
-                let event = getEventResult(this.settings.enabledEvents);
-                console.log('Enabled events:', this.settings.enabledEvents);
-                console.log('getEventResult returned:', event);
-                console.log('SnakeEventType.FREAKY_FRIDAY:', SnakeEventType.FREAKY_FRIDAY);
-                switch (event) {
-                    case SnakeEventType.CURSE:
-                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.CURSE, "CURSED!", 'p', frame))
-                        this.curses.push(Math.round(Math.random() * this.body.length))
-                        break;
-                    case SnakeEventType.SPEED:
-                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.SPEED, "SPEED", 'p', frame))
-                        break;
-                    case SnakeEventType.LENGTH:
-                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.LENGTH, "LENGTH", 'p', frame))
-                        this.length += 10
-                        break;
-                    case SnakeEventType.RING_OF_FIRE:
-                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.RING_OF_FIRE, "RING OF FIRE", 'r', frame))
-                    break;
-                    case SnakeEventType.METEORS:
-                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.METEORS, "METEORS", 'r', frame))
-                    break;
-                    case SnakeEventType.FREAKY_FRIDAY:
-                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.FREAKY_FRIDAY, "FREAKY FRIDAY", 'm', frame))
-                        grid[newX][newY] = CellType.EMPTY; // Clear the special food
-                        return; // Don't continue moving this frame - the swap handles positioning
-                    case SnakeEventType.DASH_BOOST:
-                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.DASH_BOOST, "DASH+", 'c', frame))
-                        this.dashDistance += 1;
-                        break;
-                    case SnakeEventType.DASH_FRENZY:
-                        this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.DASH_FRENZY, "DASH FRENZY!", 'c', frame))
-                        this.dashUnlimited = true;
-                        this.hasDashedThisDirection = false;
-                        break;
-                }
-            }
-            else if (grid[newX][newY] != CellType.EMPTY) {
-                die = true
-                this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.SNAKED, "SNAKED", this.colour, frame))
-            }
-        }
-
-        if (die || this.dead) {
-            for (let i = 0; i < this.body.length; i++) {
-                let x = this.body[i][0];
-                let y = this.body[i][1];
-                grid[x][y] = this.id.toString();;
-            }
+        if (die) {
+            this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.BACKWARDS_MOMENT, "BACKWARDS MOMENT", this.colour, frame));
             this.dead = true;
-            return;
-        };
+            return null;
+        }
 
+        if (!gameGrid.isInBounds(newX, newY)) {
+            this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.WALL, "WALL", this.colour, frame));
+            this.dead = true;
+            return null;
+        }
 
+        const targetCell = gameGrid.getCell(newX, newY);
+
+        if (targetCell === CellType.FOOD) {
+            this.length += this.settings.foodAmount;
+            this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.EATEN, "EATEN", this.colour, frame));
+        } else if (targetCell === CellType.SPECIAL) {
+            this.handleSpecialFood(newX, newY, frame);
+            if (this.dead) return null;
+        } else if (targetCell !== CellType.EMPTY) {
+            this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.SNAKED, "SNAKED", this.colour, frame));
+            this.dead = true;
+            return null;
+        }
+
+        // Compute trail (tail segments to remove)
+        const trail: [number, number][] = [];
         this.x = newX;
         this.y = newY;
         this.directionChanged = false;
         this.prevDirection = this.direction;
 
         this.body.unshift([newX, newY]);
-        if (this.body.length > this.length) {
-            let old = this.body.pop();
-            if (old) {
-                grid[old[0]][old[1]] = CellType.EMPTY;
-            }
+        while (this.body.length > this.length) {
+            const old = this.body.pop();
+            if (old) trail.push([old[0], old[1]]);
         }
+
+        return {
+            snakeId: this.id,
+            snakeColour: this.colour,
+            from: [this.x, this.y],
+            to: [newX, newY],
+            trail,
+            bodySegments: this.body.map(b => [b[0], b[1]] as [number, number]),
+        };
     }
 
-    dash(grid: CellValue[][], frame: number) {
+    private computeDash(gameGrid: GameGrid, frame: number): DashIntent | null {
         this.pendingDash = false;
         const DASH_STEPS = this.dashDistance;
 
-        // Compute step positions, bailing early on wall hit
         const steps: [number, number][] = [];
         let cx = this.x, cy = this.y;
         for (let i = 0; i < DASH_STEPS; i++) {
@@ -176,84 +148,49 @@ export default class Snake {
             else if (this.direction === Direction.LEFT) cx -= 1;
             else if (this.direction === Direction.RIGHT) cx += 1;
 
-            if (cx < 0 || cx >= this.settings.columnNum || cy < 0 || cy >= this.settings.rowNum) {
+            if (!gameGrid.isInBounds(cx, cy)) {
                 this.addEvent(new SnakeEvent(cx, cy, SnakeEventType.WALL, "WALL", this.colour, frame));
-                for (const [bx, by] of this.body) grid[bx][by] = this.id.toString();
                 this.dead = true;
-                return;
+                return null;
             }
             steps.push([cx, cy]);
         }
 
-        // Add all 3 positions to front of body (step 0 first → ends up at body[2])
-        // After: body = [N2, N1, N0, origHead, B1, ...]
+        // Add all positions to front of body
         for (const step of steps) {
             this.body.unshift([step[0], step[1]]);
         }
 
-        // Check each step: collision at step i → cutFromIndex = DASH_STEPS - i
-        let cutFromIndex = this.body.length; // default: no cut
+        // Check each step for food/special/collision
+        let cutFromIndex = this.body.length;
         for (let i = 0; i < DASH_STEPS; i++) {
             const [sx, sy] = steps[i];
-            const cell = grid[sx][sy];
+            const cell = gameGrid.getCell(sx, sy);
 
             if (cell === CellType.FOOD) {
                 this.length += this.settings.foodAmount;
                 this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.EATEN, "EATEN", this.colour, frame));
-                grid[sx][sy] = this.colour;
             } else if (cell === CellType.SPECIAL) {
-                let event = getEventResult(this.settings.enabledEvents);
-                switch (event) {
-                    case SnakeEventType.CURSE:
-                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.CURSE, "CURSED!", 'p', frame));
-                        this.curses.push(Math.round(Math.random() * this.body.length));
-                        break;
-                    case SnakeEventType.SPEED:
-                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.SPEED, "SPEED", 'p', frame));
-                        break;
-                    case SnakeEventType.LENGTH:
-                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.LENGTH, "LENGTH", 'p', frame));
-                        this.length += 10;
-                        break;
-                    case SnakeEventType.RING_OF_FIRE:
-                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.RING_OF_FIRE, "RING OF FIRE", 'r', frame));
-                        break;
-                    case SnakeEventType.METEORS:
-                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.METEORS, "METEORS", 'r', frame));
-                        break;
-                    case SnakeEventType.FREAKY_FRIDAY:
-                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.FREAKY_FRIDAY, "FREAKY FRIDAY", 'm', frame));
-                        break;
-                    case SnakeEventType.DASH_BOOST:
-                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.DASH_BOOST, "TURBO DASH", 'c', frame));
-                        this.dashDistance += 1;
-                        break;
-                    case SnakeEventType.DASH_FRENZY:
-                        this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.DASH_FRENZY, "DASH FRENZY", 'c', frame));
-                        this.dashUnlimited = true;
-                        this.hasDashedThisDirection = false;
-                        break;
-                }
+                this.handleSpecialFood(sx, sy, frame);
             } else if (cell !== CellType.EMPTY && cell !== this.colour) {
-                // Collision — parts of body behind this step die
                 const cutAt = DASH_STEPS - i;
                 if (cutAt < cutFromIndex) cutFromIndex = cutAt;
             }
         }
 
-        // Apply truncation or normal tail removal
+        // Compute trail
+        const trail: [number, number][] = [];
         if (cutFromIndex < this.body.length) {
             for (let i = cutFromIndex; i < this.body.length; i++) {
-                const [bx, by] = this.body[i];
-                if (grid[bx][by] === this.colour) grid[bx][by] = CellType.EMPTY;
+                trail.push([this.body[i][0], this.body[i][1]]);
             }
             this.body.splice(cutFromIndex);
             this.length = this.body.length;
-            } else {
+        } else {
             for (let i = 0; i < DASH_STEPS; i++) {
                 if (this.body.length > this.length) {
                     const old = this.body.pop();
-                    if (old) grid[old[0]][old[1]] = CellType.EMPTY;
+                    if (old) trail.push([old[0], old[1]]);
                 }
             }
         }
@@ -263,44 +200,95 @@ export default class Snake {
         this.directionChanged = false;
         this.prevDirection = this.direction;
         this.hasDashedThisDirection = true;
+
+        return {
+            snakeId: this.id,
+            snakeColour: this.colour,
+            steps,
+            trail,
+            bodySegments: this.body.map(b => [b[0], b[1]] as [number, number]),
+        };
+    }
+
+    private handleSpecialFood(x: number, y: number, frame: number): void {
+        const event = getEventResult(this.settings.enabledEvents);
+        switch (event) {
+            case SnakeEventType.CURSE:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.CURSE, "CURSED!", 'p', frame));
+                this.curses.push(Math.round(Math.random() * this.body.length));
+                break;
+            case SnakeEventType.SPEED:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.SPEED, "SPEED", 'p', frame));
+                break;
+            case SnakeEventType.LENGTH:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.LENGTH, "LENGTH", 'p', frame));
+                this.length += 10;
+                break;
+            case SnakeEventType.RING_OF_FIRE:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.RING_OF_FIRE, "RING OF FIRE", 'r', frame));
+                break;
+            case SnakeEventType.METEORS:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.METEORS, "METEORS", 'r', frame));
+                break;
+            case SnakeEventType.FREAKY_FRIDAY:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.FREAKY_FRIDAY, "FREAKY FRIDAY", 'm', frame));
+                break;
+            case SnakeEventType.DASH_BOOST:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.DASH_BOOST, "DASH+", 'c', frame));
+                this.dashDistance += 1;
+                break;
+            case SnakeEventType.DASH_FRENZY:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.DASH_FRENZY, "DASH FRENZY!", 'c', frame));
+                this.dashUnlimited = true;
+                this.hasDashedThisDirection = false;
+                break;
+        }
+    }
+
+    /**
+     * Write snake body to the grid for rendering.
+     * Also handles curse visual side-effects and random curse chat events.
+     */
+    drawSnakeToGrid(gameGrid: GameGrid, frame: number): void {
+        for (let i = 0; i < this.body.length; i++) {
+            const x = this.body[i][0];
+            const y = this.body[i][1];
+            gameGrid.setCell(x, y, this.colour);
+            if (this.curses.length > 0 && this.curses.includes(i)) {
+                // Random curse chat event (preserved from original drawSnake)
+                if (Math.random() > 0.95) {
+                    this.addEvent(new SnakeEvent(x, y, SnakeEventType.CHAT, this.getCurseString(), 'r', frame));
+                }
+                if (this.direction === Direction.UP) gameGrid.setCell(x, y - 1, this.id.toString());
+                else if (this.direction === Direction.DOWN) gameGrid.setCell(x, y + 1, this.id.toString());
+                else if (this.direction === Direction.LEFT) gameGrid.setCell(x - 1, y, this.id.toString());
+                else if (this.direction === Direction.RIGHT) gameGrid.setCell(x + 1, y, this.id.toString());
+            }
+        }
+    }
+
+    /**
+     * Mark dead snake body on the grid (ID markers instead of colour).
+     */
+    markDead(gameGrid: GameGrid): void {
+        for (const [bx, by] of this.body) {
+            gameGrid.setCell(bx, by, this.id.toString());
+        }
     }
 
     getCurseString() {
-        let curse = Math.floor(Math.random() * this.settings.curseStrings.length);
-        return this.settings.curseStrings[curse]
-    }
-
-    drawSnake(grid: CellValue[][], frame: number) {
-        for (let i = 0; i < this.body.length; i++) {
-            let x = this.body[i][0];
-            let y = this.body[i][1];
-            grid[x][y] = this.colour;
-            if (this.curses.length > 0 && this.curses.includes(i)) {
-                if (Math.random() > 0.95) {
-                    this.addEvent(new SnakeEvent(x, y, SnakeEventType.CHAT, this.getCurseString(), 'r', frame))
-                }
-                if (this.direction == 'up') {
-                    grid[x][y - 1] = this.id.toString();
-                } else if (this.direction == 'down') {
-                    grid[x][y + 1] = this.id.toString();;
-                } else if (this.direction == 'left') {
-                    grid[x - 1][y] = this.id.toString();;
-                } else if (this.direction == 'right') {
-                    grid[x + 1][y] = this.id.toString();;
-                }
-            }
-        }
-
+        const curse = Math.floor(Math.random() * this.settings.curseStrings.length);
+        return this.settings.curseStrings[curse];
     }
 
     reset() {
         this.x = Math.floor(Math.random() * (this.settings.columnNum - this.settings.spawnMargin)) + this.settings.spawnMargin;
         this.y = Math.floor(Math.random() * (this.settings.rowNum - this.settings.spawnMargin)) + this.settings.spawnMargin;
-        this.direction = ['up', 'down', 'left', 'right'][Math.floor(Math.random() * 4)] as Direction;
+        this.direction = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT][Math.floor(Math.random() * 4)];
         this.prevDirection = undefined;
-        this.length = this.settings.startingLength
+        this.length = this.settings.startingLength;
         this.body = [[this.x, this.y]];
-        this.dead = false
+        this.dead = false;
         this.curses = [];
         this.hasMovedOnce = false;
         this.pendingDash = false;
