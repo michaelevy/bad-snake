@@ -17,7 +17,7 @@ export enum CellType {
     EMPTY = '0',
     FOOD = 'f',
     SPECIAL = 'p',
-    HAZARD = 'r',
+    HAZARD = 'h',
 }
 
 // CellValue covers enum values plus snake colour/ID strings

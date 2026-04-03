@@ -35,6 +35,7 @@ let settings: Settings = {
         '6': '#007777',
         'f': '#d44c50',
         'p': 'purple',
+        'h': '#FF0000',
         '0': '#243344',
         'w': '#FFFFFF',
 
