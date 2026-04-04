@@ -5,6 +5,6 @@ export class SpeedEffect implements EventEffect {
     readonly type = SnakeEventType.SPEED;
 
     onTrigger(context: EventContext): void {
-        context.settings.fps += 5;
+        context.runtime.fps += 5;
     }
 }

@@ -36,6 +36,6 @@ export class FreakFridayEffect implements EventEffect {
         }
 
         // Intentional freeze so players can get their bearings
-        context.settings.frozenUntilFrame = context.frame + FREEZE_DURATION;
+        context.runtime.frozenUntilFrame = context.frame + FREEZE_DURATION;
     }
 }

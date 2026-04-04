@@ -7,18 +7,18 @@ export class RingOfFireEffect implements EventEffect {
     readonly type = SnakeEventType.RING_OF_FIRE;
 
     onTrigger(context: EventContext): void {
-        context.settings.status = {
+        context.runtime.status = {
             frame: context.frame,
             type: Status.RING_OF_FIRE,
         };
     }
 
     onTick(context: EventContext): void {
-        if (context.settings.status.type !== Status.RING_OF_FIRE) return;
+        if (context.runtime.status.type !== Status.RING_OF_FIRE) return;
 
-        const ringSize = Math.floor((context.frame - context.settings.status.frame) / 5);
-        const cols = context.settings.columnNum;
-        const rows = context.settings.rowNum;
+        const ringSize = Math.floor((context.frame - context.runtime.status.frame) / 5);
+        const cols = context.config.columnNum;
+        const rows = context.config.rowNum;
 
         for (let i = 0; i < cols; i++) {
             for (let j = 0; j < rows; j++) {

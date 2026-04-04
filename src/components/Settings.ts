@@ -62,6 +62,40 @@ export interface Settings{
     frozenUntilFrame: number;
 }
 
+/**
+ * Immutable per round. Created once when a round starts, never mutated during gameplay.
+ */
+export interface GameConfig {
+    squareSize: number;
+    margin: number;
+    colours: Record<string, string>;
+    curseStrings: string[];
+    spawnMargin: number;
+    foodAmount: number;
+    squareColour: string;
+    enabledEvents: SnakeEventType[];
+    enabledSettings: SettingsType[];
+    startingLength: number;
+    columnNum: number;
+    rowNum: number;
+    fps: number;
+}
+
+/**
+ * Mutable state that changes during a round.
+ */
+export interface RuntimeState {
+    fps: number;
+    foodInterval: number;
+    status: StatusEvent;
+    meteors: Meteor[];
+    deadScore: boolean;
+    invertedControls: boolean;
+    specialOnly: boolean;
+    frozenUntilFrame: number;
+    currentSettings: SettingsType[];
+}
+
 export function getBeginSettings(enabledSettings: SettingsType[]){
     const weightedSettings = createWeightedList(enabledSettings, getSettingRarity);
     

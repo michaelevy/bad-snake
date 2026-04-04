@@ -1,12 +1,13 @@
 import { SnakeEvent, SnakeEventType } from "./SnakeEvent";
-import { Settings } from "./Settings";
+import { GameConfig, RuntimeState } from "./Settings";
 import Snake from "../snake";
 import { CellValue } from "../utilities";
 
 export interface EventContext {
     grid: CellValue[][];
     snakes: Snake[];
-    settings: Settings;
+    config: GameConfig;
+    runtime: RuntimeState;
     frame: number;
     triggeringSnake?: Snake;
     addEvent: (event: SnakeEvent) => void; // for effects that need to emit secondary events (e.g. INCOMING! chat)

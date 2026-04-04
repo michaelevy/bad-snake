@@ -1,4 +1,4 @@
-import { Settings, SettingsType, Status, getBeginSettings } from "./components/Settings"
+import { Settings, SettingsType, Status, getBeginSettings, RuntimeState } from "./components/Settings"
 import { SnakeEvent, SnakeEventType } from "./components/SnakeEvent";
 import Snake from "./snake";
 import { Direction, CellType, CellValue } from "./utilities";
@@ -97,7 +97,8 @@ export function addEvent(event: SnakeEvent) {
     const context: EventContext = {
         grid: gameGrid.getRawGrid(),
         snakes: allSnakes,
-        settings: settings,
+        config: settings,      // Settings satisfies GameConfig (same fields)
+        runtime: settings as unknown as RuntimeState, // Settings satisfies RuntimeState (same fields)
         frame: event.frame,
         addEvent: addEvent,
     };
@@ -209,7 +210,8 @@ export function init(controlSchemes: string[], enabledSettings:string[], enabled
             const tickContext: EventContext = {
                 grid: gameGrid.getRawGrid(),
                 snakes: snakes,
-                settings: settings,
+                config: settings,
+                runtime: settings as unknown as RuntimeState,
                 frame: frame,
                 addEvent: addEvent,
             };
