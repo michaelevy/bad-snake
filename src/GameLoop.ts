@@ -54,12 +54,12 @@ export class GameLoop {
             state.grid.resolveAll();
         }
 
-        // Write surviving snake bodies to grid for rendering
+        // 3. Write surviving snake bodies to grid for rendering
         state.snakes.forEach(snake => {
             if (!snake.dead) snake.drawSnakeToGrid(state.grid, state.frame);
         });
 
-        // 2. Check round end
+        // 4. Check round end
         if ((this.snakeNum > 1 && liveSnakes <= 1) || (this.snakeNum == 1 && liveSnakes == 0)) {
             state.reset();
             this.fpsInterval = 1000 / state.runtime.fps;
@@ -67,7 +67,7 @@ export class GameLoop {
             return;
         }
 
-        // 3. Execute triggers (food spawning, FPS escalation)
+        // 5. Execute triggers (food spawning, FPS escalation)
         if (state.started && (state.frame % state.runtime.foodInterval) == 0) {
             state.spawnFood();
         }
@@ -76,7 +76,7 @@ export class GameLoop {
             this.fpsInterval = 1000 / state.runtime.fps;
         }
 
-        // 4. Tick ongoing effects (ring of fire, meteors)
+        // 6. Tick ongoing effects (ring of fire, meteors)
         const tickContext: EventContext = {
             grid: state.grid.getRawGrid(),
             snakes: state.snakes,
@@ -87,7 +87,7 @@ export class GameLoop {
         };
         state.eventRegistry.tickAll(tickContext);
 
-        // 5. Render
+        // 7. Render
         const combinedSettings = {
             ...state.config,
             ...state.runtime,
@@ -111,7 +111,7 @@ export class GameLoop {
             drawer.drawWinner(state.roundWinner.colour, state.longestSnakeInRound, state.longestSnakeLength, combinedSettings);
         }
 
-        // 6. Advance frame
+        // 8. Advance frame
         state.frame++;
 
         // Update fpsInterval in case an event changed fps

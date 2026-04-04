@@ -27,6 +27,8 @@ export class GameState {
     longestSnakeInRound: Snake | null;
     longestSnakeLength: number;
     showWinnerUntil: number;
+    private canvasWidth: number;
+    private canvasHeight: number;
 
     constructor(config: GameConfig) {
         this.baseConfig = config;
@@ -40,6 +42,8 @@ export class GameState {
         this.longestSnakeInRound = null;
         this.longestSnakeLength = 0;
         this.showWinnerUntil = 0;
+        this.canvasWidth = 0;
+        this.canvasHeight = 0;
 
         this.runtime = {
             fps: config.fps,
@@ -219,10 +223,6 @@ export class GameState {
             rowNum: Math.floor((this.canvasHeight - 100) / squareSize),
         };
     }
-
-    // Canvas dimensions needed for columnNum/rowNum calculation
-    private canvasWidth: number = 0;
-    private canvasHeight: number = 0;
 
     setCanvasDimensions(width: number, height: number): void {
         this.canvasWidth = width;
