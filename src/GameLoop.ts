@@ -79,6 +79,7 @@ export class GameLoop {
         // 6. Tick ongoing effects (ring of fire, meteors)
         const tickContext: EventContext = {
             grid: state.grid.getRawGrid(),
+            gameGrid: state.grid,
             snakes: state.snakes,
             config: state.config,
             runtime: state.runtime,

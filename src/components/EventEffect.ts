@@ -2,9 +2,11 @@ import { SnakeEvent, SnakeEventType } from "./SnakeEvent";
 import { GameConfig, RuntimeState } from "./Settings";
 import Snake from "../snake";
 import { CellValue } from "../utilities";
+import { GameGrid } from "../GameGrid";
 
 export interface EventContext {
     grid: CellValue[][];
+    gameGrid: GameGrid;
     snakes: Snake[];
     config: GameConfig;
     runtime: RuntimeState;

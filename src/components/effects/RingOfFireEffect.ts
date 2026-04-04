@@ -23,7 +23,7 @@ export class RingOfFireEffect implements EventEffect {
         for (let i = 0; i < cols; i++) {
             for (let j = 0; j < rows; j++) {
                 if (i < ringSize || i >= cols - ringSize || j < ringSize || j >= rows - ringSize) {
-                    context.grid[i][j] = CellType.HAZARD;
+                    context.gameGrid.setCell(i, j, CellType.HAZARD);
                 }
             }
         }

@@ -7,14 +7,14 @@ export class SnakeEvent {
     type: SnakeEventType;
     colour: string;
     text: string;
-    constructor(x: number,y: number, type: SnakeEventType, text: string, colour: string, frame: any) {
+    constructor(x: number,y: number, type: SnakeEventType, text: string, colour: string, frame: number) {
         this.x = x;
         this.y = y;
-        this.frame = frame; 
+        this.frame = frame;
         this.type = type;
         this.colour = colour;
         this.text = text;
-    }   
+    }
 }
 
 export enum SnakeEventType {

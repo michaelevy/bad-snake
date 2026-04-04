@@ -40,7 +40,7 @@ export class MeteorEffect implements EventEffect {
                 for (let i = 0; i < context.config.columnNum; i++) {
                     for (let j = 0; j < context.config.rowNum; j++) {
                         if (meteor.containsPoint(i, j)) {
-                            context.grid[i][j] = CellType.HAZARD;
+                            context.gameGrid.setCell(i, j, CellType.HAZARD);
                         }
                     }
                 }

@@ -90,6 +90,7 @@ export class GameState {
 
         const context: EventContext = {
             grid: this.grid.getRawGrid(),
+            gameGrid: this.grid,
             snakes: this.snakes,
             config: this.config,
             runtime: this.runtime,

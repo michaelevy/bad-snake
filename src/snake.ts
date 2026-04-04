@@ -17,7 +17,7 @@ export default class Snake {
     directionChanged: boolean;
     id: number;
     settings: Settings;
-    addEvent: Function;
+    addEvent: (event: SnakeEvent) => void;
     hasMovedOnce: boolean;
     controlScheme: string;
     pendingDash: boolean;
@@ -25,7 +25,7 @@ export default class Snake {
     dashDistance: number;
     dashUnlimited: boolean;
 
-    constructor(x: number, y: number, direction: Direction, length: number, colour: string, id: number, settings: Settings, addEvent: Function, controlScheme: string) {
+    constructor(x: number, y: number, direction: Direction, length: number, colour: string, id: number, settings: Settings, addEvent: (event: SnakeEvent) => void, controlScheme: string) {
         this.x = x;
         this.y = y;
         this.direction = direction;

@@ -132,7 +132,7 @@ export function getEventResult(enabledEvents: SnakeEventType[]): SnakeEventType{
 }
 
 
-function shuffled(elements: any[]) {
+function shuffled<T>(elements: T[]): T[] {
     const copy = [...elements];
     for(let i = copy.length - 1; i >= 0; i--){
         let j = Math.floor(Math.random() * (i + 1)); // 0 <= j <= i
@@ -142,11 +142,11 @@ function shuffled(elements: any[]) {
     }
     return copy;
 }
-function choose(elements: any[], n: number){
+function choose<T>(elements: T[], n: number): T[] {
     return shuffled(elements).slice(0, n);
 }
 
-function chooseSingle(elements: any[]){
+function chooseSingle<T>(elements: T[]): T {
     return choose(elements, 1)[0];
 }
 
