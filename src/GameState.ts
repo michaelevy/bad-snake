@@ -146,7 +146,10 @@ export class GameState {
         this.applyRoundSettings();
 
         this.started = false;
-        this.snakes.forEach(snake => snake.reset());
+        this.snakes.forEach(snake => {
+            snake.settings = this.buildCombinedSettings();
+            snake.reset();
+        });
         this.grid.reset(this.config.columnNum, this.config.rowNum);
         this.frame = 0;
         this.events = [];

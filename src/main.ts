@@ -50,6 +50,7 @@ export function init(controlSchemes: string[], enabledSettings: string[], enable
     const state = new GameState(config);
     state.setCanvasDimensions(canvas.width, canvas.height);
     state.applyRoundSettings();
+    state.grid.reset(state.config.columnNum, state.config.rowNum);
     state.createSnakes(controlSchemes);
 
     // Wire input handlers

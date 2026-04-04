@@ -292,8 +292,8 @@ export default class Snake {
     }
 
     reset() {
-        this.x = Math.floor(Math.random() * (this.settings.columnNum - this.settings.spawnMargin)) + this.settings.spawnMargin;
-        this.y = Math.floor(Math.random() * (this.settings.rowNum - this.settings.spawnMargin)) + this.settings.spawnMargin;
+        this.x = Math.floor(Math.random() * (this.settings.columnNum - this.settings.spawnMargin * 2)) + this.settings.spawnMargin;
+        this.y = Math.floor(Math.random() * (this.settings.rowNum - this.settings.spawnMargin * 2)) + this.settings.spawnMargin;
         this.direction = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT][Math.floor(Math.random() * 4)];
         this.prevDirection = undefined;
         this.length = this.settings.startingLength;
