@@ -79,6 +79,7 @@ export interface GameConfig {
     columnNum: number;
     rowNum: number;
     fps: number;
+    roundLimit: number | null;
 }
 
 /**

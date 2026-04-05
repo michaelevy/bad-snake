@@ -1,5 +1,6 @@
 import { getSettingRarity, Settings, SettingsType } from "../components/Settings";
 import { SnakeEvent } from "../components/SnakeEvent";
+import { RoundLogEntry } from "../GameState";
 import Snake from "../snake";
 import { Rarity, CellValue } from "../utilities";
 
@@ -127,7 +128,7 @@ export function setColour(colour: string, colours: Record<string, string>, squar
     }
 }
 
-export function drawWinner(winnerColour: string, longestSnake: Snake | null, longestLength: number, settings: Settings) {
+export function drawWinner(winnerColour: string, longestSnakes: Snake[], longestLength: number, settings: Settings) {
     ctx.font = "bold 120px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -143,21 +144,92 @@ export function drawWinner(winnerColour: string, longestSnake: Snake | null, lon
     setColour(winnerColour, settings.colours, settings.squareColour);
     ctx.fillText(text, x, y);
 
-    // Draw longest snake below the winner text
-    if (longestSnake) {
+    // Draw longest snake(s) below the winner text
+    if (longestSnakes.length > 0) {
         ctx.font = "60px monospace";
-        const longestText = `LONGEST: ${longestSnake.colour.toUpperCase()} (${longestLength})`;
+        const names = longestSnakes.map(s => s.colour.toUpperCase()).join(", ");
+        const longestText = `LONGEST: ${names} (${longestLength})`;
         const longestY = y + 100;
 
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 2;
         ctx.strokeText(longestText, x, longestY);
 
-        setColour(longestSnake.colour, settings.colours, settings.squareColour);
+        // Use first snake's colour for the text (tie case is multicoloured by nature, pick one)
+        setColour(longestSnakes[0].colour, settings.colours, settings.squareColour);
         ctx.fillText(longestText, x, longestY);
     }
 
     // Reset text alignment
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
+}
+
+export function drawFinalScores(snakes: Snake[], settings: Settings): void {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const sorted = [...snakes].sort((a, b) => b.totalScore - a.totalScore);
+    const topScore = sorted[0]?.totalScore ?? 0;
+    const champions = sorted.filter(s => s.totalScore === topScore);
+
+    const cx = canvas.width / 2;
+    let y = canvas.height / 4;
+
+    // Title
+    ctx.font = "bold 80px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = settings.colours['w'];
+    ctx.fillText("GAME OVER", cx, y);
+    y += 100;
+
+    // Champion line
+    if (champions.length === 1) {
+        ctx.font = "bold 60px monospace";
+        setColour(champions[0].colour, settings.colours, settings.squareColour);
+        ctx.fillText(`${champions[0].colour.toUpperCase()} IS CHAMPION`, cx, y);
+    } else {
+        ctx.font = "bold 60px monospace";
+        ctx.fillStyle = settings.colours['w'];
+        const names = champions.map(s => s.colour.toUpperCase()).join(" & ");
+        ctx.fillText(`${names} TIE`, cx, y);
+    }
+    y += 90;
+
+    // Scores list
+    ctx.font = "40px monospace";
+    sorted.forEach(snake => {
+        setColour(snake.colour, settings.colours, settings.squareColour);
+        ctx.fillText(`${snake.colour.toUpperCase()}  ${snake.totalScore}`, cx, y);
+        y += 55;
+    });
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+}
+
+export function updateRoundInfo(roundNumber: number, roundLimit: number | null): void {
+    const el = document.getElementById('round-info');
+    if (!el) return;
+
+    const limitText = roundLimit !== null ? `/ ${roundLimit}` : '/ ∞';
+    el.innerHTML = `
+        <span class="round-label">Round</span>
+        <span class="round-number">${roundNumber}</span>
+        <span class="round-limit">${limitText}</span>
+    `;
+}
+
+export function updateActivityLog(log: RoundLogEntry[], colours: Record<string, string>): void {
+    const el = document.getElementById('activity-log');
+    if (!el) return;
+
+    const colourSpan = (c: string) =>
+        `<span style="color:${colours[c] ?? '#fff'}">${c.toUpperCase()}</span>`;
+
+    el.innerHTML = log.slice().reverse().map(entry => {
+        const winnerPart = entry.winner ? `${colourSpan(entry.winner)} wins` : 'Draw';
+        const longestPart = entry.longestSnakes.map(colourSpan).join(', ');
+        return `<div class="log-entry">Round ${entry.round} &mdash; ${winnerPart} &nbsp;|&nbsp; Longest: ${longestPart} (${entry.longestLength})</div>`;
+    }).join('');
 }

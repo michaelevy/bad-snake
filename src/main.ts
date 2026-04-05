@@ -5,7 +5,7 @@ import * as controller from "./components/controller";
 import { GameState } from "./GameState";
 import { GameLoop } from "./GameLoop";
 
-export function init(controlSchemes: string[], enabledSettings: string[], enabledEvents: string[]) {
+export function init(controlSchemes: string[], enabledSettings: string[], enabledEvents: string[], roundLimit: number | null) {
     const canvas = document.getElementById("snake") as HTMLCanvasElement;
     drawer.initCanvas(canvas);
 
@@ -44,6 +44,7 @@ export function init(controlSchemes: string[], enabledSettings: string[], enable
         columnNum: Math.floor((canvas.width - 100) / 25),
         rowNum: Math.floor((canvas.height - 100) / 25),
         fps: 6,
+        roundLimit,
     };
 
     // Create game state

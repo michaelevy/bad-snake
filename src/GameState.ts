@@ -13,6 +13,13 @@ import { DashFrenzyEffect } from "./components/effects/DashFrenzyEffect";
 import Snake from "./snake";
 import { Direction, CellType, CellValue } from "./utilities";
 
+export interface RoundLogEntry {
+    round: number;
+    winner: string | null;
+    longestSnakes: string[];
+    longestLength: number;
+}
+
 export class GameState {
     grid: GameGrid;
     snakes: Snake[];
@@ -24,9 +31,12 @@ export class GameState {
     frame: number;
     started: boolean;
     roundWinner: Snake | null;
-    longestSnakeInRound: Snake | null;
+    longestSnakesInRound: Snake[];
     longestSnakeLength: number;
     showWinnerUntil: number;
+    roundNumber: number;
+    roundLog: RoundLogEntry[];
+    gameOver: boolean;
     private canvasWidth: number;
     private canvasHeight: number;
 
@@ -39,9 +49,12 @@ export class GameState {
         this.frame = 0;
         this.started = false;
         this.roundWinner = null;
-        this.longestSnakeInRound = null;
+        this.longestSnakesInRound = [];
         this.longestSnakeLength = 0;
         this.showWinnerUntil = 0;
+        this.roundNumber = 0;
+        this.roundLog = [];
+        this.gameOver = false;
         this.canvasWidth = 0;
         this.canvasHeight = 0;
 
@@ -131,7 +144,7 @@ export class GameState {
         // Track longest snake
         const longestLength = Math.max(...this.snakes.map(s => s.length));
         const longestSnakes = this.snakes.filter(s => s.length === longestLength);
-        this.longestSnakeInRound = longestSnakes[0];
+        this.longestSnakesInRound = longestSnakes;
         this.longestSnakeLength = longestLength;
 
         // Score: alive snakes get +1, longest snakes get +1
@@ -141,6 +154,19 @@ export class GameState {
         longestSnakes.forEach(snake => {
             snake.totalScore += 1;
         });
+
+        this.roundNumber++;
+        this.roundLog.push({
+            round: this.roundNumber,
+            winner: this.roundWinner?.colour ?? null,
+            longestSnakes: longestSnakes.map(s => s.colour),
+            longestLength,
+        });
+
+        if (this.baseConfig.roundLimit !== null && this.roundNumber >= this.baseConfig.roundLimit) {
+            this.gameOver = true;
+            return;
+        }
 
         // Apply new round settings
         this.applyRoundSettings();

@@ -17,6 +17,7 @@ export class GameLoop {
     }
 
     start(): void {
+        drawer.updateRoundInfo(this.state.roundNumber + 1, this.state.config.roundLimit);
         this.draw(0);
     }
 
@@ -33,6 +34,13 @@ export class GameLoop {
 
     private tick(): void {
         const state = this.state;
+
+        if (state.gameOver) {
+            const combinedSettings = { ...state.config, ...state.runtime, elapsed: 0 };
+            drawer.drawFinalScores(state.snakes, combinedSettings);
+            return;
+        }
+
         let liveSnakes = 0;
 
         // 1. Count live snakes
@@ -62,6 +70,10 @@ export class GameLoop {
         // 4. Check round end
         if ((this.snakeNum > 1 && liveSnakes <= 1) || (this.snakeNum == 1 && liveSnakes == 0)) {
             state.reset();
+            drawer.updateActivityLog(state.roundLog, state.config.colours);
+            if (!state.gameOver) {
+                drawer.updateRoundInfo(state.roundNumber + 1, state.baseConfig.roundLimit);
+            }
             this.fpsInterval = 1000 / state.runtime.fps;
             this.snakeNum = state.snakes.length;
             return;
@@ -109,7 +121,7 @@ export class GameLoop {
         drawer.drawSettings(state.runtime.currentSettings, combinedSettings);
 
         if (state.roundWinner && state.frame < state.showWinnerUntil) {
-            drawer.drawWinner(state.roundWinner.colour, state.longestSnakeInRound, state.longestSnakeLength, combinedSettings);
+            drawer.drawWinner(state.roundWinner.colour, state.longestSnakesInRound, state.longestSnakeLength, combinedSettings);
         }
 
         // 8. Advance frame
