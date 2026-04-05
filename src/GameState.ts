@@ -10,6 +10,7 @@ import { CurseEffect } from "./components/effects/CurseEffect";
 import { LengthEffect } from "./components/effects/LengthEffect";
 import { DashBoostEffect } from "./components/effects/DashBoostEffect";
 import { DashFrenzyEffect } from "./components/effects/DashFrenzyEffect";
+import { CornucopiaEffect, GrandFeastEffect, BountifulHarvestEffect } from "./components/effects/CornucopiaEffect";
 import Snake from "./snake";
 import { Direction, CellType, CellValue } from "./utilities";
 
@@ -80,6 +81,9 @@ export class GameState {
         this.eventRegistry.register(new LengthEffect());
         this.eventRegistry.register(new DashBoostEffect());
         this.eventRegistry.register(new DashFrenzyEffect());
+        this.eventRegistry.register(new CornucopiaEffect());
+        this.eventRegistry.register(new GrandFeastEffect());
+        this.eventRegistry.register(new BountifulHarvestEffect());
     }
 
     createSnakes(controlSchemes: string[]): void {
@@ -108,6 +112,8 @@ export class GameState {
             config: this.config,
             runtime: this.runtime,
             frame: event.frame,
+            eventX: event.x,
+            eventY: event.y,
             addEvent: this.addEvent.bind(this),
         };
 

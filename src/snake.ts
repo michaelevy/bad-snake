@@ -251,6 +251,15 @@ export default class Snake {
                 this.dashUnlimited = true;
                 this.hasDashedThisDirection = false;
                 return false;
+            case SnakeEventType.CORNUCOPIA:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.CORNUCOPIA, "CORNUCOPIA!", 'f', frame));
+                return false;
+            case SnakeEventType.GRAND_FEAST:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.GRAND_FEAST, "GRAND FEAST!", 'f', frame));
+                return false;
+            case SnakeEventType.BOUNTIFUL_HARVEST:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.BOUNTIFUL_HARVEST, "BOUNTIFUL HARVEST!", 'f', frame));
+                return false;
         }
         return false;
     }

@@ -11,6 +11,8 @@ export interface EventContext {
     config: GameConfig;
     runtime: RuntimeState;
     frame: number;
+    eventX?: number;
+    eventY?: number;
     triggeringSnake?: Snake;
     addEvent: (event: SnakeEvent) => void; // for effects that need to emit secondary events (e.g. INCOMING! chat)
 }
