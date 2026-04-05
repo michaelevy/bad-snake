@@ -101,11 +101,31 @@ export class GameGrid {
     resolveAll(): CollisionResult[] {
         const results: CollisionResult[] = [];
 
+        // Find cells targeted by more than one normal move intent simultaneously
+        const normalMoves = this.pendingIntents.filter(i => !isDashIntent(i)) as MoveIntent[];
+        const seen = new Set<string>();
+        const conflicts = new Set<string>();
+        for (const intent of normalMoves) {
+            const key = `${intent.to[0]},${intent.to[1]}`;
+            if (seen.has(key)) conflicts.add(key);
+            else seen.add(key);
+        }
+
         for (const intent of this.pendingIntents) {
             if (isDashIntent(intent)) {
                 results.push(...this.resolveDash(intent));
             } else {
-                results.push(this.resolveMove(intent));
+                const key = `${intent.to[0]},${intent.to[1]}`;
+                if (conflicts.has(key)) {
+                    // Simultaneous same-cell collision -- both snakes die
+                    this.clearTrail(intent.trail);
+                    for (const [bx, by] of intent.bodySegments) {
+                        this.setCell(bx, by, intent.snakeId.toString());
+                    }
+                    results.push({ snakeId: intent.snakeId, outcome: { type: 'died_snake' } });
+                } else {
+                    results.push(this.resolveMove(intent));
+                }
             }
         }
 
@@ -122,7 +142,7 @@ export class GameGrid {
 
         // Check bounds
         if (!this.isInBounds(tx, ty)) {
-            // Mark death body
+            this.clearTrail(intent.trail);
             for (const [bx, by] of intent.bodySegments) {
                 this.setCell(bx, by, intent.snakeId.toString());
             }
@@ -150,6 +170,7 @@ export class GameGrid {
 
         // Check hazard
         if (targetCell === CellType.HAZARD) {
+            this.clearTrail(intent.trail);
             for (const [bx, by] of intent.bodySegments) {
                 this.setCell(bx, by, intent.snakeId.toString());
             }
@@ -158,6 +179,7 @@ export class GameGrid {
 
         // Check collision with non-empty cell (another snake or self)
         if (targetCell !== CellType.EMPTY) {
+            this.clearTrail(intent.trail);
             for (const [bx, by] of intent.bodySegments) {
                 this.setCell(bx, by, intent.snakeId.toString());
             }

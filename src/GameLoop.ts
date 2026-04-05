@@ -78,8 +78,16 @@ export class GameLoop {
                 if (intent) { state.grid.queueIntent(intent); }
                 if (snake.dead) { snake.markDead(state.grid); }
             });
-            // Resolve all intents simultaneously
-            state.grid.resolveAll();
+            // Resolve all intents simultaneously and apply any deaths the resolver detected
+            // (e.g. simultaneous same-cell collisions that snake.update() couldn't see)
+            const collisionResults = state.grid.resolveAll();
+            collisionResults.forEach(result => {
+                const { type } = result.outcome;
+                if (type === 'died_snake' || type === 'died_wall' || type === 'died_hazard') {
+                    const snake = state.snakes.find(s => s.id === result.snakeId);
+                    if (snake && !snake.dead) snake.dead = true;
+                }
+            });
         }
 
         // 3. Write surviving snake bodies to grid for rendering
