@@ -2,6 +2,7 @@ import { GameState } from "./GameState";
 import { EventContext } from "./components/EventEffect";
 import * as drawer from "./draw/draw";
 import * as segment from "./draw/Segment";
+import { CellType } from "./utilities";
 
 export class GameLoop {
     private state: GameState;
@@ -64,6 +65,13 @@ export class GameLoop {
         const frozen = state.frame < state.runtime.frozenUntilFrame;
 
         if (!frozen) {
+            // Write dead score cells as hazards before snakes read the grid
+            if (state.runtime.deadScore) {
+                segment.getScoreGridCells(state.snakes, state.config.columnNum).forEach(([x, y]) => {
+                    state.grid.setCell(x, y, CellType.HAZARD);
+                });
+            }
+
             // Collect intents (snakes read grid but do NOT write)
             state.snakes.forEach(snake => {
                 const intent = snake.update(state.grid, state.started, state.frame);

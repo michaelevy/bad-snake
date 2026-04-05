@@ -61,7 +61,7 @@ export class GameState {
 
         this.runtime = {
             fps: config.fps,
-            foodInterval: 540 / config.fps,
+            foodInterval: Math.round(540 / config.fps),
             status: { frame: 0, type: Status.NORMAL },
             meteors: [],
             deadScore: false,
@@ -209,7 +209,7 @@ export class GameState {
         // Reset runtime
         this.runtime = {
             fps: 6,
-            foodInterval: 540 / 6,
+            foodInterval: Math.round(540 / 6),
             status: { frame: 0, type: Status.NORMAL },
             meteors: [],
             deadScore: false,
@@ -243,7 +243,7 @@ export class GameState {
         });
 
         this.runtime.fps = fps;
-        this.runtime.foodInterval = 540 / fps;
+        this.runtime.foodInterval = Math.round(540 / fps);
 
         // Create NEW immutable config for this round
         this.config = {

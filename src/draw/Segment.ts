@@ -42,6 +42,37 @@ function numberToSegmentDisplay(number: number) {
     return result;
 }
 
+export function getScoreGridCells(snakes: Snake[], columnNum: number): [number, number][] {
+    const scoreMargin = 5;
+    const cells: [number, number][] = [];
+
+    snakes.forEach(snake => {
+        const y = 5 + snake.id * 6;
+
+        const leftSegments = numberToSegmentDisplay(snake.length);
+        collectSegmentCells(cells, leftSegments, scoreMargin, y);
+
+        const rightSegments = numberToSegmentDisplay(snake.totalScore);
+        const rightX = columnNum - rightSegments.length * scoreMargin - scoreMargin;
+        collectSegmentCells(cells, rightSegments, rightX, y);
+    });
+
+    return cells;
+}
+
+function collectSegmentCells(cells: [number, number][], segments: number[][], x: number, y: number) {
+    segments.forEach((segment, index) => {
+        const segmentX = x + index * 5;
+        for (let i = 0; i < segment.length; i++) {
+            if (segment[i] === 1) {
+                segmentIndexToGridCoords(i).forEach(coord => {
+                    cells.push([segmentX + coord[0], y + coord[1]]);
+                });
+            }
+        }
+    });
+}
+
 export function drawScore(snake: Snake, scoreMargin: number, settings: Settings) {
     const segments = numberToSegmentDisplay(snake.length);
     const x = scoreMargin;
