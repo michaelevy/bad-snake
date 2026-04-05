@@ -163,6 +163,7 @@
   <script type="module">
     import { init } from './src/main.ts';
     document.querySelector('#begin').addEventListener('click', begin)
+
     function begin() {
       const controls = document.querySelectorAll('input.control:checked');
       const settings = document.querySelectorAll('input.setting:checked');
@@ -172,10 +173,20 @@
       const eventsArray = Array.from(events).map(event => event.id);
       const roundLimitInput = document.querySelector('#round-limit').value;
       const roundLimit = roundLimitInput ? parseInt(roundLimitInput, 10) : null;
+      startGame({ controlsArray, settingsArray, eventsArray, roundLimit });
+    }
 
-      document.querySelector('body').innerHTML = '<div id="game-wrapper"><canvas id="snake" width="400" height="400"></canvas><div id="bottom-bar"><div id="activity-log"></div><div id="round-info"></div></div></div>'
+    let activeLoop = null;
 
-      init(controlsArray, settingsArray, eventsArray, roundLimit)
+    function startGame(params) {
+      if (activeLoop) activeLoop.stop();
+      const { controlsArray, settingsArray, eventsArray, roundLimit } = params;
+      document.querySelector('body').innerHTML = '<div id="game-wrapper"><canvas id="snake" width="400" height="400"></canvas><div id="bottom-bar"><div id="activity-log"></div><div id="round-info"></div></div></div>';
+      activeLoop = init(
+        controlsArray, settingsArray, eventsArray, roundLimit,
+        () => startGame(params),
+        () => location.reload()
+      );
     }
   </script>
   </main>

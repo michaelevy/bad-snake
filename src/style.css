@@ -244,6 +244,7 @@ sub{
 
 
 #game-wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 50px 50px 16px 50px;

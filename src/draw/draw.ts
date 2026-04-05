@@ -220,6 +220,31 @@ export function updateRoundInfo(roundNumber: number, roundLimit: number | null):
     `;
 }
 
+export function showGameOverUI(onPlayAgain: () => void, onHome: () => void): void {
+    if (document.getElementById('game-over-ui')) return;
+
+    const wrapper = document.getElementById('game-wrapper');
+    if (!wrapper) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'game-over-ui';
+    overlay.style.cssText = 'position:absolute;left:0;right:0;bottom:170px;display:flex;justify-content:center;gap:30px;pointer-events:none;';
+
+    const makeBtn = (label: string, onClick: () => void) => {
+        const btn = document.createElement('button');
+        btn.className = 'glass-button';
+        btn.textContent = label;
+        btn.style.pointerEvents = 'auto';
+        btn.style.margin = '0';
+        btn.addEventListener('click', onClick);
+        return btn;
+    };
+
+    overlay.appendChild(makeBtn('PLAY AGAIN', onPlayAgain));
+    overlay.appendChild(makeBtn('HOME', onHome));
+    wrapper.appendChild(overlay);
+}
+
 export function updateActivityLog(log: RoundLogEntry[], colours: Record<string, string>): void {
     const el = document.getElementById('activity-log');
     if (!el) return;

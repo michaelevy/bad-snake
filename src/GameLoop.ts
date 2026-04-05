@@ -8,12 +8,16 @@ export class GameLoop {
     private fpsInterval: number;
     private then: number;
     private snakeNum: number;
+    private onGameOver?: () => void;
+    private gameOverHandled = false;
+    private rafId = 0;
 
-    constructor(state: GameState) {
+    constructor(state: GameState, onGameOver?: () => void) {
         this.state = state;
         this.fpsInterval = 1000 / state.runtime.fps;
         this.then = window.performance.now();
         this.snakeNum = state.snakes.length;
+        this.onGameOver = onGameOver;
     }
 
     start(): void {
@@ -21,8 +25,12 @@ export class GameLoop {
         this.draw(0);
     }
 
+    stop(): void {
+        cancelAnimationFrame(this.rafId);
+    }
+
     private draw = (newtime: DOMHighResTimeStamp): void => {
-        requestAnimationFrame(this.draw);
+        this.rafId = requestAnimationFrame(this.draw);
 
         const now = newtime;
         const elapsed = now - this.then;
@@ -36,6 +44,10 @@ export class GameLoop {
         const state = this.state;
 
         if (state.gameOver) {
+            if (!this.gameOverHandled) {
+                this.gameOverHandled = true;
+                this.onGameOver?.();
+            }
             const combinedSettings = { ...state.config, ...state.runtime, elapsed: 0 };
             drawer.drawFinalScores(state.snakes, combinedSettings);
             return;
