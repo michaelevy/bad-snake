@@ -2,7 +2,7 @@ import { EventEffect, EventContext } from "../EventEffect";
 import { SnakeEventType } from "../SnakeEvent";
 import { CellType } from "../../utilities";
 
-const FREEZE_DURATION = 4; // frames to freeze after swap so players can reorient
+const FREEZE_DURATION_SECS = 0.4; // seconds to freeze after swap so players can reorient
 
 export class FreakFridayEffect implements EventEffect {
     readonly type = SnakeEventType.FREAKY_FRIDAY;
@@ -42,6 +42,6 @@ export class FreakFridayEffect implements EventEffect {
         }
 
         // Intentional freeze so players can get their bearings
-        context.runtime.frozenUntilFrame = context.frame + FREEZE_DURATION;
+        context.runtime.frozenUntilFrame = context.frame + Math.round(FREEZE_DURATION_SECS * context.runtime.fps);
     }
 }

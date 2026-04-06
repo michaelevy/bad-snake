@@ -22,7 +22,7 @@ export class MeteorEffect implements EventEffect {
             const x = Math.floor(Math.random() * context.config.columnNum);
             const y = Math.floor(Math.random() * context.config.rowNum);
             const radius = Math.floor(Math.random() * 5) + 3;
-            const meteor = new Meteor(x, y, radius, context.frame);
+            const meteor = new Meteor(x, y, radius, context.frame, context.runtime.fps);
             context.runtime.meteors.push(meteor);
 
             // Preserve the "INCOMING!" warning event from original spawnMeteor()
