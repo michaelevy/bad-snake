@@ -31,15 +31,15 @@ function spawnFoodGrid(context: EventContext, gridSize: number, rangeMultiplier:
 
 export class CornucopiaEffect implements EventEffect {
     readonly type = SnakeEventType.CORNUCOPIA;
-    onTrigger(context: EventContext): void { spawnFoodGrid(context, 4, 1); }
+    onTrigger(context: EventContext): void { spawnFoodGrid(context, 2, 1); }
 }
 
 export class GrandFeastEffect implements EventEffect {
     readonly type = SnakeEventType.GRAND_FEAST;
-    onTrigger(context: EventContext): void { spawnFoodGrid(context, 8, 1.5); }
+    onTrigger(context: EventContext): void { spawnFoodGrid(context, 3, 1.5); }
 }
 
 export class BountifulHarvestEffect implements EventEffect {
     readonly type = SnakeEventType.BOUNTIFUL_HARVEST;
-    onTrigger(context: EventContext): void { spawnFoodGrid(context, 12, 2); }
+    onTrigger(context: EventContext): void { spawnFoodGrid(context, 8, 2); }
 }
