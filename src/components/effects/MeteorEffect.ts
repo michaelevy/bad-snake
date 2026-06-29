@@ -1,5 +1,5 @@
 import { EventEffect, EventContext } from "../EventEffect";
-import { SnakeEventType, SnakeEvent } from "../SnakeEvent";
+import { SnakeEventType } from "../SnakeEvent";
 import { Status } from "../Settings";
 import { Meteor } from "../Meteor";
 import { CellType } from "../../utilities";
@@ -24,9 +24,6 @@ export class MeteorEffect implements EventEffect {
             const radius = Math.floor(Math.random() * 5) + 3;
             const meteor = new Meteor(x, y, radius, context.frame, context.runtime.fps);
             context.runtime.meteors.push(meteor);
-
-            // Preserve the "INCOMING!" warning event from original spawnMeteor()
-            context.addEvent(new SnakeEvent(x, y, SnakeEventType.CHAT, 'INCOMING!', 'y', context.frame));
         }
 
         // Remove finished meteors

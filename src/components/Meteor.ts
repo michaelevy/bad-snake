@@ -6,7 +6,7 @@ export class Meteor {
     warningDuration: number;
     impactDuration: number;
 
-    static readonly WARNING_SECS = 1.0;
+    static readonly WARNING_SECS = 2.0;
     static readonly IMPACT_SECS = 0.5;
 
     constructor(x: number, y: number, radius: number, spawnFrame: number, fps: number) {
@@ -21,6 +21,11 @@ export class Meteor {
     isFinished(currentFrame: number): boolean {
         const elapsed = currentFrame - this.spawnFrame;
         return elapsed >= this.warningDuration + this.impactDuration;
+    }
+
+    isInWarningPhase(currentFrame: number): boolean {
+        const elapsed = currentFrame - this.spawnFrame;
+        return elapsed < this.warningDuration;
     }
 
     isInImpactPhase(currentFrame: number): boolean {

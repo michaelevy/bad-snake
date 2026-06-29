@@ -136,6 +136,7 @@ export class GameLoop {
         };
 
         drawer.drawGrid(state.grid.getRawGrid(), combinedSettings);
+        drawer.drawMeteorWarnings(state.runtime.meteors, state.frame, combinedSettings);
 
         if (state.runtime.deadScore) {
             state.snakes.forEach(snake => {

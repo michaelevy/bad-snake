@@ -1,4 +1,5 @@
 import { getSettingRarity, Settings, SettingsType } from "../components/Settings";
+import { Meteor } from "../components/Meteor";
 import { SnakeEvent } from "../components/SnakeEvent";
 import { RoundLogEntry } from "../GameState";
 import Snake from "../snake";
@@ -33,6 +34,34 @@ export function drawGrid(grid: CellValue[][], settings: Settings) {
             ctx.fillRect(x + (settings.margin/2), y + (settings.margin/2) + gridOffset, settings.squareSize - (settings.margin / 2), settings.squareSize - (settings.margin / 2));
         }
     }
+}
+
+export function drawMeteorWarnings(meteors: Meteor[], frame: number, settings: Settings): void {
+    const flashOn = Math.floor(frame / 3) % 2 === 0;
+    if (!flashOn) return;
+
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = '#FF4400';
+
+    for (const meteor of meteors) {
+        if (!meteor.isInWarningPhase(frame)) continue;
+        for (let i = 0; i < settings.columnNum; i++) {
+            for (let j = 0; j < settings.rowNum; j++) {
+                if (!meteor.containsPoint(i, j)) continue;
+                const x = i * settings.squareSize;
+                const y = j * settings.squareSize;
+                ctx.fillRect(
+                    x + settings.margin / 2,
+                    y + settings.margin / 2 + gridOffset,
+                    settings.squareSize - settings.margin / 2,
+                    settings.squareSize - settings.margin / 2
+                );
+            }
+        }
+    }
+
+    ctx.restore();
 }
 
 export function drawEvents(events: SnakeEvent[], settings: Settings, frame: number) {
