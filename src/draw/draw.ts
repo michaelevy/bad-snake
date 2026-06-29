@@ -1,4 +1,4 @@
-import { getSettingRarity, Settings, SettingsType } from "../components/Settings";
+import { getSettingRarity, PendingShrink, Settings, SettingsType } from "../components/Settings";
 import { Meteor } from "../components/Meteor";
 import { SnakeEvent } from "../components/SnakeEvent";
 import { RoundLogEntry } from "../GameState";
@@ -58,6 +58,33 @@ export function drawMeteorWarnings(meteors: Meteor[], frame: number, settings: S
                     settings.squareSize - settings.margin / 2
                 );
             }
+        }
+    }
+
+    ctx.restore();
+}
+
+export function drawShrinkWarning(pendingShrink: PendingShrink | null, frame: number, settings: Settings): void {
+    if (!pendingShrink) return;
+
+    const flashOn = Math.floor(frame / 3) % 2 === 0;
+    if (!flashOn) return;
+
+    ctx.save();
+    ctx.globalAlpha = 0.4;
+    ctx.fillStyle = '#FF8800';
+
+    for (let i = 0; i < settings.columnNum; i++) {
+        for (let j = 0; j < settings.rowNum; j++) {
+            if (i < pendingShrink.newCols && j < pendingShrink.newRows) continue;
+            const x = i * settings.squareSize;
+            const y = j * settings.squareSize;
+            ctx.fillRect(
+                x + settings.margin / 2,
+                y + settings.margin / 2 + gridOffset,
+                settings.squareSize - settings.margin / 2,
+                settings.squareSize - settings.margin / 2
+            );
         }
     }
 

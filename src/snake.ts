@@ -1,4 +1,4 @@
-import { Direction, CellType } from './utilities';
+import { Direction, CellType, isSpecialFood } from './utilities';
 import { SnakeEvent, SnakeEventType } from './components/SnakeEvent';
 import { getEventResult, Settings } from './components/Settings';
 import { GameGrid, MoveIntent, DashIntent, SnakeIntent } from './GameGrid';
@@ -107,7 +107,7 @@ export default class Snake {
         if (targetCell === CellType.FOOD) {
             this.length += this.settings.foodAmount;
             this.addEvent(new SnakeEvent(newX, newY, SnakeEventType.EATEN, "EATEN", this.colour, frame));
-        } else if (targetCell === CellType.SPECIAL) {
+        } else if (isSpecialFood(targetCell)) {
             const shouldAbort = this.handleSpecialFood(newX, newY, frame);
             if (this.dead || shouldAbort) return null;
         } else if (targetCell !== CellType.EMPTY) {
@@ -173,7 +173,7 @@ export default class Snake {
             if (cell === CellType.FOOD) {
                 this.length += this.settings.foodAmount;
                 this.addEvent(new SnakeEvent(sx, sy, SnakeEventType.EATEN, "EATEN", this.colour, frame));
-            } else if (cell === CellType.SPECIAL) {
+            } else if (isSpecialFood(cell)) {
                 const shouldAbort = this.handleSpecialFood(sx, sy, frame);
                 if (shouldAbort) return null;
             } else if (cell !== CellType.EMPTY && cell !== this.colour) {
@@ -219,7 +219,8 @@ export default class Snake {
      * Returns true if the move should abort (e.g., FREAKY_FRIDAY swap), false otherwise.
      */
     private handleSpecialFood(x: number, y: number, frame: number): boolean {
-        const event = getEventResult(this.settings.enabledEvents);
+        const event = this.settings.specialFoodEvents.get(`${x},${y}`) ?? getEventResult(this.settings.enabledEvents);
+        this.settings.specialFoodEvents.delete(`${x},${y}`);
         switch (event) {
             case SnakeEventType.CURSE:
                 this.addEvent(new SnakeEvent(x, y, SnakeEventType.CURSE, "CURSED!", 'p', frame));
@@ -259,6 +260,12 @@ export default class Snake {
                 return false;
             case SnakeEventType.BOUNTIFUL_HARVEST:
                 this.addEvent(new SnakeEvent(x, y, SnakeEventType.BOUNTIFUL_HARVEST, "BOUNTIFUL HARVEST!", 'f', frame));
+                return false;
+            case SnakeEventType.TERRA_FIRMA:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.TERRA_FIRMA, "TERRA FIRMA!", 'g', frame));
+                return false;
+            case SnakeEventType.TERRA_NULLIUS:
+                this.addEvent(new SnakeEvent(x, y, SnakeEventType.TERRA_NULLIUS, "TERRA NULLIUS!", 'r', frame));
                 return false;
         }
         return false;

@@ -60,6 +60,8 @@ export interface Settings{
     status: StatusEvent;
     meteors: Meteor[];
     frozenUntilFrame: number;
+    pendingShrink: PendingShrink | null;
+    specialFoodEvents: Map<string, SnakeEventType>;
 }
 
 /**
@@ -80,6 +82,16 @@ export interface GameConfig {
     rowNum: number;
     fps: number;
     roundLimit: number | null;
+    canvasWidth: number;
+    canvasHeight: number;
+}
+
+export interface PendingShrink {
+    newCols: number;
+    newRows: number;
+    newSquareSize: number;
+    newMargin: number;
+    executionFrame: number;
 }
 
 /**
@@ -95,6 +107,8 @@ export interface RuntimeState {
     specialOnly: boolean;
     frozenUntilFrame: number;
     currentSettings: SettingsType[];
+    pendingShrink: PendingShrink | null;
+    specialFoodEvents: Map<string, SnakeEventType>;
 }
 
 export function getBeginSettings(enabledSettings: SettingsType[]){

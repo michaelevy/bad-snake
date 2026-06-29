@@ -36,6 +36,8 @@ export enum SnakeEventType {
     CORNUCOPIA = 'CORNUCOPIA',
     GRAND_FEAST = 'GRAND FEAST',
     BOUNTIFUL_HARVEST = 'BOUNTIFUL HARVEST',
+    TERRA_FIRMA = 'TERRA FIRMA',
+    TERRA_NULLIUS = 'TERRA NULLIUS',
 }
 
 let eventRarity = {
@@ -57,6 +59,8 @@ let eventRarity = {
     [SnakeEventType.CORNUCOPIA]: Rarity.COMMON,
     [SnakeEventType.GRAND_FEAST]: Rarity.RARE,
     [SnakeEventType.BOUNTIFUL_HARVEST]: Rarity.EPIC,
+    [SnakeEventType.TERRA_FIRMA]: Rarity.COMMON,
+    [SnakeEventType.TERRA_NULLIUS]: Rarity.EPIC,
 }
 
 export function getEventRarity(event: SnakeEventType) {

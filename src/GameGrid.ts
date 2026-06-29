@@ -1,4 +1,4 @@
-import { CellType, CellValue } from "./utilities";
+import { CellType, CellValue, isSpecialFood } from "./utilities";
 
 export interface MoveIntent {
     snakeId: number;
@@ -160,7 +160,7 @@ export class GameGrid {
         }
 
         // Check special food
-        if (targetCell === CellType.SPECIAL) {
+        if (isSpecialFood(targetCell)) {
             // Clear the special food cell before writing body
             this.setCell(tx, ty, CellType.EMPTY);
             this.clearTrail(intent.trail);
@@ -212,7 +212,7 @@ export class GameGrid {
             if (cell === CellType.FOOD) {
                 this.setCell(sx, sy, intent.snakeColour);
                 results.push({ snakeId: intent.snakeId, outcome: { type: 'food', cellType: CellType.FOOD } });
-            } else if (cell === CellType.SPECIAL) {
+            } else if (isSpecialFood(cell)) {
                 results.push({ snakeId: intent.snakeId, outcome: { type: 'special', cellType: CellType.SPECIAL } });
             } else if (cell !== CellType.EMPTY && cell !== intent.snakeColour) {
                 // Collision during dash -- truncate
@@ -249,6 +249,31 @@ export class GameGrid {
      */
     getRawGrid(): CellValue[][] {
         return this.cells;
+    }
+
+    /**
+     * Shrink the grid by updating bounds. Cells outside the new dimensions
+     * become inaccessible but are not deleted.
+     */
+    shrink(newColumns: number, newRows: number): void {
+        (this as { columns: number }).columns = newColumns;
+        (this as { rows: number }).rows = newRows;
+    }
+
+    /**
+     * Grow the grid to new dimensions, preserving existing cell content.
+     */
+    expand(newColumns: number, newRows: number): void {
+        for (let x = 0; x < this.columns; x++) {
+            while (this.cells[x].length < newRows) {
+                this.cells[x].push(CellType.EMPTY);
+            }
+        }
+        while (this.cells.length < newColumns) {
+            this.cells.push(new Array(newRows).fill(CellType.EMPTY));
+        }
+        (this as { columns: number }).columns = newColumns;
+        (this as { rows: number }).rows = newRows;
     }
 
     /**

@@ -28,6 +28,7 @@ export function init(controlSchemes: string[], enabledSettings: string[], enable
             '1': '#770000', '2': '#005500', '3': '#000077',
             '4': '#777700', '5': '#770077', '6': '#007777',
             'f': '#d44c50', 'p': 'purple', 'h': '#FF0000', '0': '#243344', 'w': '#FFFFFF',
+            'sc': '#00FF00', 'sr': '#0000FF',
         },
         curseStrings: [
             'GET IT OFF ME!!', 'ARGH', 'OWWWW', 'HELP ME',
@@ -45,6 +46,8 @@ export function init(controlSchemes: string[], enabledSettings: string[], enable
         rowNum: Math.floor((canvas.height - 100) / 25),
         fps: 6,
         roundLimit,
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height,
     };
 
     // Create game state

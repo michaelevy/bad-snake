@@ -1,6 +1,6 @@
 import { GameGrid } from "./GameGrid";
-import { GameConfig, RuntimeState, Settings, Status, getBeginSettings, SettingsType } from "./components/Settings";
-import { SnakeEvent, SnakeEventType } from "./components/SnakeEvent";
+import { GameConfig, RuntimeState, Settings, Status, getBeginSettings, getEventResult, SettingsType } from "./components/Settings";
+import { SnakeEvent, SnakeEventType, getEventRarity } from "./components/SnakeEvent";
 import { EventRegistry, EventContext } from "./components/EventEffect";
 import { SpeedEffect } from "./components/effects/SpeedEffect";
 import { RingOfFireEffect } from "./components/effects/RingOfFireEffect";
@@ -11,8 +11,10 @@ import { LengthEffect } from "./components/effects/LengthEffect";
 import { DashBoostEffect } from "./components/effects/DashBoostEffect";
 import { DashFrenzyEffect } from "./components/effects/DashFrenzyEffect";
 import { CornucopiaEffect, GrandFeastEffect, BountifulHarvestEffect } from "./components/effects/CornucopiaEffect";
+import { ExpandEffect } from "./components/effects/ExpandEffect";
+import { ShrinkEffect } from "./components/effects/ShrinkEffect";
 import Snake from "./snake";
-import { Direction, CellType, CellValue } from "./utilities";
+import { Direction, CellType, Rarity } from "./utilities";
 
 export interface RoundLogEntry {
     round: number;
@@ -69,6 +71,8 @@ export class GameState {
             specialOnly: false,
             frozenUntilFrame: 0,
             currentSettings: [],
+            pendingShrink: null,
+            specialFoodEvents: new Map(),
         };
 
         // Create and populate event registry
@@ -84,6 +88,8 @@ export class GameState {
         this.eventRegistry.register(new CornucopiaEffect());
         this.eventRegistry.register(new GrandFeastEffect());
         this.eventRegistry.register(new BountifulHarvestEffect());
+        this.eventRegistry.register(new ExpandEffect());
+        this.eventRegistry.register(new ShrinkEffect());
     }
 
     createSnakes(controlSchemes: string[]): void {
@@ -121,20 +127,24 @@ export class GameState {
     }
 
     spawnFood(): void {
-        let food: CellValue = CellType.FOOD;
         const pos = this.grid.findEmpty();
         if (!pos) return;
 
         const [x, y] = pos;
 
         if (this.runtime.specialOnly || this.frame % (this.runtime.foodInterval * 4) == (this.runtime.foodInterval * 3)) {
-            food = CellType.SPECIAL;
-            this.addEvent(new SnakeEvent(x, y, SnakeEventType.SPECIAL, 'SPECIAL FOOD', 'p', this.frame));
+            const event = getEventResult(this.config.enabledEvents);
+            const rarity = getEventRarity(event);
+            const food = rarity === Rarity.COMMON ? CellType.SPECIAL_COMMON
+                       : rarity === Rarity.RARE   ? CellType.SPECIAL_RARE
+                       :                            CellType.SPECIAL;
+            this.runtime.specialFoodEvents.set(`${x},${y}`, event);
+            this.grid.setCell(x, y, food);
+            this.addEvent(new SnakeEvent(x, y, SnakeEventType.SPECIAL, 'SPECIAL FOOD', food, this.frame));
         } else {
+            this.grid.setCell(x, y, CellType.FOOD);
             this.addEvent(new SnakeEvent(x, y, SnakeEventType.FOOD, 'FOOD', 'f', this.frame));
         }
-
-        this.grid.setCell(x, y, food);
     }
 
     reset(): void {
@@ -217,6 +227,8 @@ export class GameState {
             specialOnly: false,
             frozenUntilFrame: 0,
             currentSettings: beginSettings,
+            pendingShrink: null,
+            specialFoodEvents: new Map(),
         };
 
         beginSettings.forEach((setting: SettingsType) => {
@@ -257,6 +269,8 @@ export class GameState {
             fps,
             columnNum: Math.floor((this.canvasWidth - 100) / squareSize),
             rowNum: Math.floor((this.canvasHeight - 100) / squareSize),
+            canvasWidth: this.canvasWidth,
+            canvasHeight: this.canvasHeight,
         };
     }
 
